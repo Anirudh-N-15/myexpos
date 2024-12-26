@@ -4,7 +4,7 @@ alias n R2;
 n = 20;
 
 while(i <= n) do
-    sum = sum + (i*i) ;
+    sum = sum + (i*i*i) ;
     i = i + 1 ;
   endwhile;  
 
