@@ -1,0 +1,14 @@
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE +1 ]* 16 ) + 13 ] = SP;
+
+//Setting the SP to User Area Page Number * 512 - 1
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]* 16) + 11 ]* 512 - 1 ;
+
+backup;
+print "TIMER";
+
+print [PROCESS_TABLE +1] ;
+
+restore;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE +1]*16) + 13] ;
+
+ireturn;
