@@ -1,0 +1,47 @@
+//Setting the 9th entry in the Process table(Mode Flag) to 5(print to console)
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 9] = 5 ;
+
+alias userSP R0 ;
+
+userSP = SP ;
+
+//Saving the current Stack Pointer
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 13] = SP ;
+
+//Setting the stack pointer to top of kernel stack
+SP = ([PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 11] * 512) -1 ;
+
+alias physicalPageNum R1 ;
+alias offset R2 ;
+alias fileDescPhysicalAddr R3;
+
+//userSP -4 is argument 1 
+physicalPageNum = [PTBR + 2* ((userSP -4)/ 512)] ;
+
+offset = (userSP -4) % 512 ;
+
+fileDescPhysicalAddr = (physicalPageNum * 512) + offset;
+
+alias fileDescriptor R4;
+
+fileDescriptor=[fileDescPhysicalAddr];
+
+if (fileDescriptor != -2)
+then
+	 alias physicalAddrRetVal R5;
+	 physicalAddrRetVal = ([PTBR + 2 * ((userSP - 1) / 512)] * 512) + ((userSP - 1) % 512);
+	 [physicalAddrRetVal] = -1;
+else
+	 alias word R5;
+	 word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+	 print word;
+	 alias physicalAddrRetVal R6;
+	 physicalAddrRetVal = ([PTBR + 2 * (userSP - 1)/ 512] * 512) + ((userSP - 1) % 512);
+	 [physicalAddrRetVal] = 0;
+endif;
+
+SP = userSP ;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+ireturn;

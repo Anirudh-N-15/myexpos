@@ -1,5 +1,5 @@
 MOV R1, 1
-MOV R2, 10
+MOV R2, 20
 
 LOOP:
 PORT P1,R1
