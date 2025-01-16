@@ -1,45 +1,33 @@
-PUSH BP
-MOV BP,SP
-MOV R1,6
-MOV R0, BP
-SUB R0, R1
-MOV R0, [R0]
-MOV R2, "Write"
-BRKP
-EQ R0, R2
-JZ 78
-MOV R0, 5
-PUSH R0 
-MOV R0, BP
-MOV R1,5
-SUB R0, R1
-MOV R0,[R0]
-PUSH R0
-MOV R0, BP
-DCR R1
-SUB R0,R1
-MOV R0, [R0]
-PUSH R0
-MOV R0, BP
-DCR R1
-SUB R0,R1
-MOV R0, [R0]
-PUSH R0
-PUSH R0
-INT 7
-MOV R1, BP
-MOV R0, 5
-ADD R0,R1
-MOV R0, [R0]
-MOV R2, 2
-SUB R1, R2
-MOV R3, [R0]
-MOV [R1], R3
-POP R0
-POP R0
-POP R0
-POP R0
-POP R0
-MOV BP, [SP]
-POP R0
-RET
+           MOV R10, SP
+           MOV R7, 3
+           SUB R10, R7
+           MOV R2 , [R10]
+           MOV R7, 1
+           SUB R10, R7
+           MOV R1, [R10]
+           SUB R10, R7
+           MOV R0, [R10]
+           MOV R6, 'Write"
+           EQ R6, R0
+           JZ R6, 62
+           MOV R5, -2
+           EQ R5, R1
+           JZ R5, 62
+           MOV R5 ,5
+           PUSH R5
+           MOV R5, -2
+           PUSH R5
+           PUSH R2
+           PUSH R11
+           PUSH R11
+           INT 7
+           POP R2
+           POP R5
+           POP R5
+           POP R5
+           POP R5
+           MOV R10, SP
+           SUB R10, 1
+           MOV [R10] ,R2
+           RET
+
