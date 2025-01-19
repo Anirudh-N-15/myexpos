@@ -3,10 +3,10 @@ decl
 	int temp, num ;
 enddecl
 begin
-	num =0;
-	while(num <=100) do
+	num =100;
+	while(num <=200) do
 		temp = exposcall("Write", -2,num);
-		num = num + 2;
+		num = num + 1;
 	endwhile;
 	return 0;
 end
