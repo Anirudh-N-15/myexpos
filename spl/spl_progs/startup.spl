@@ -3,6 +3,9 @@ breakpoint;
 loadi(54,67);//Loading the Boot Module i.e module 7 from disk to memory
 loadi(55,68);
 
+loadi(69,11); //Loading the idle code
+loadi(70,12);
+
 SP = 82 * 512 - 1; //Setting the SP to point to where idle code is
 breakpoint;
 call BOOT_MODULE ;

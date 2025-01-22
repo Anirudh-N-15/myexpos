@@ -6,48 +6,24 @@ SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 11] *512 -1 ; //Transfer cont
 
 backup;
 
-alias currentPID R1 ;
-currentPID = [SYSTEM_STATUS_TABLE+1] ;
+//Save registers in use
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]* 16 + 4] = READY;
 
-alias PCT_entry R2 ;
-PCT_entry = PROCESS_TABLE + currentPID*16 ;
+alias i R5 ;
+i = 0 ;
+while(i<16) do 
+	[PROCESS_TABLE + i*16] = [PROCESS_TABLE + i*16] + 1 ;
+	i = i +1 ;
+endwhile;
 
-[PCT_entry + 12] = SP % 512 ;
-[PCT_entry + 14] = PTBR ;
-[PCT_entry + 15] = 10 ;
-[PCT_entry + 4] = READY ;
-
-alias newPID R3 ;
-
-if(currentPID == 0) then
-	newPID =1 ;
-else
-	newPID =0 ;
-endif;
-
-alias newPCT R4 ;
-newPCT = PROCESS_TABLE + newPID*16 ;
-
-//Set back Kernel SP, PTBR , PTLR
-SP = [newPCT + 11] * 512 + [newPCT+12] ;
-PTBR = [newPCT + 14] ;
-PTLR = [newPCT + 15] ;
-
-[SYSTEM_STATUS_TABLE +1] = newPID ;
-
-breakpoint;
-
-if([newPCT+4] == CREATED) then
-	[newPCT+4] = RUNNING ;
-	SP = [newPCT + 13];
-	ireturn;
-endif;
-
-[newPCT + 4] = RUNNING ;
+//set reg r0 r1 r2 as arg1 arg2 arg3
+call MOD_5 ;
 
 restore;
 
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13] ;
+
+// [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9] = 0 ;
 
 breakpoint; //Assignment 2. Just remove it for the normal code
 

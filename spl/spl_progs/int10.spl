@@ -1,0 +1,24 @@
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 4] = TERMINATED ;
+breakpoint;
+
+alias currPID R10;
+alias i R11 ;
+alias flag R12 ;
+
+currPID = [SYSTEM_STATUS_TABLE+1] ;
+//i = (currPID+1)%16 ;
+i =1 ;
+flag = 0;
+
+while(i < 16) do
+	if([PROCESS_TABLE + i*16 + 4] != TERMINATED) then
+		call SCHEDULER ;
+	endif;
+	i = (i+1) ;
+endwhile;
+
+//if([PROCESS_TABLE+4] == 1) then
+//	call SCHEDULER ;
+//endif;	
+
+halt;
