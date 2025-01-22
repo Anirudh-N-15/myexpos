@@ -19,6 +19,10 @@ echo "INT 10"
 ./spl ./spl_progs/int10.spl
 echo "Scheduler Module"
 ./spl ./spl_progs/mod5.spl
+echo "Resource Manager"
+./spl ./spl_progs/mod0.spl
+echo "Device Manager Module"
+./spl ./spl_progs/mod4.spl
 
 
 cd /home/expos/myexpos/xfs-interface
@@ -34,6 +38,8 @@ load --library ../expl/library.lib
 load --exec ../expl/expl_progs/exe.xsm
 load --module 5 ../spl/spl_progs/mod5.xsm
 load --int=10 ../spl/spl_progs/int10.xsm
+load --module 0 ../spl/spl_progs/mod0.xsm
+load --module 4 ../spl/spl_progs/mod4.xsm
 load --exec ../expl/expl_progs/primes.xsm
 exit
 EOF

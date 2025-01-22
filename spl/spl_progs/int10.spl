@@ -6,7 +6,6 @@ alias i R11 ;
 alias flag R12 ;
 
 currPID = [SYSTEM_STATUS_TABLE+1] ;
-//i = (currPID+1)%16 ;
 i =1 ;
 flag = 0;
 

@@ -31,6 +31,13 @@ loadi(91,70); //Loading 2nd user program, prime.xsm. Code=page 91;heap =89,90; s
 loadi(50,63); //Loading Module 5, Scheduler/Context switch module
 loadi(51,64);
 
+loadi(40,53); //Loading Module 0, Resource Manager
+loadi(41,54);
+
+loadi(48,61); //Loading Module 4, Device Manager
+loadi(49,62);
+
+[TERMINAL_STATUS_TABLE +1] = 0; //Indicates that the terminal is free before scheduling the first process
 
 PTBR = PAGE_TABLE_BASE + 20; //For init process. As idle occupies PTBR
 PTLR = 10 ;
