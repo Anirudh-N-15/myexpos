@@ -1,14 +1,19 @@
 int main() {
 decl
-	int temp,num;
+    int a,b,temp,temp2;
 enddecl
-begin
-	num =1;
-	while(num <= 100) do
-		temp = exposcall("Write", -2, num);
-		num = num + 2;
-	endwhile;
-	return 0;
-end
-}
 
+begin
+    temp = exposcall("Read", -1, a);
+    temp = exposcall("Read", -1, b);
+    temp2 = 0 ;
+        while(b != 0) do
+        temp2 = b ;
+        b = a % b;
+        a = temp2;
+    endwhile;
+
+    temp = exposcall("Write", -2, a);
+    return 0 ;
+end    
+}

@@ -1,6 +1,28 @@
 alias functionNum R1;
 alias currentPID R2;
 
+if(functionNum == 4) then
+	multipush(R0,R1,R2,R3);
+	//funcNum = ACQUIRE_TERMINAL ;
+	//currPID = [SYSTEM_STATUS_TABLE + 1] ;
+	R1 = 8;
+	R2 = currentPID;
+	call MOD_0;
+	multipop(R0,R1,R2,R3);
+	read;
+	[PROCESS_TABLE + currentPID*16 + 4] = WAIT_TERMINAL ;
+	//Invoking the context switch module (check for step 8)
+	multipush(R0,R1,R2,R3);
+	call MOD_5 ;
+	multipop(R0,R1,R2,R3);
+	
+	alias word R4 ;
+	word = ([PTBR + (R3)*2/512])*512 + (R3)%512 ;
+	[word] = [PROCESS_TABLE + currentPID * 16 + 8] ;
+	
+	return;
+endif;	
+
 if(functionNum == 3) then
 	multipush(R0, R1, R2, R3);
 	R1 = 8;

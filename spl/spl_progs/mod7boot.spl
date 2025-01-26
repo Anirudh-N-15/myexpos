@@ -37,6 +37,12 @@ loadi(41,54);
 loadi(48,61); //Loading Module 4, Device Manager
 loadi(49,62);
 
+loadi(8,21); //Loading Console Interrupt routine
+loadi(9,22);
+
+loadi(14,27); //Loading INT6, Terminal Read
+loadi(15,28);
+
 [TERMINAL_STATUS_TABLE +1] = 0; //Indicates that the terminal is free before scheduling the first process
 
 PTBR = PAGE_TABLE_BASE + 20; //For init process. As idle occupies PTBR
@@ -113,7 +119,7 @@ PTLR = 10;
 [PTBR+19] = "0110" ;
 
 [PROCESS_TABLE + 2*16 + 1] = 2 ;       //PID
-[PROCESS_TABLE + 2*16 + 4] = CREATED ; //STATE
+[PROCESS_TABLE + 2*16 + 4] = TERMINATED ; //STATE
 [PROCESS_TABLE + 2*16 + 11] = 88 ;     //UAP(User Area Page Number)
 [PROCESS_TABLE + 2*16 + 12] = 0 ;      //Kernel Stack Pointer(KSP) is Assumed to be 0
 [PROCESS_TABLE + 2*16 + 13] = 8*512 ;  //User stack pointer always points to logical page 8
@@ -155,7 +161,7 @@ PTLR = 10;
 [PTBR+19] = "0110";
 
 [PROCESS_TABLE + 3*16 + 1] = 3 ;       //PID
-[PROCESS_TABLE + 3*16 + 4] = CREATED ; //STATE
+[PROCESS_TABLE + 3*16 + 4] = TERMINATED ; //STATE
 [PROCESS_TABLE + 3*16 + 11] = 94 ;     //UAP(User Area Page Number)
 [PROCESS_TABLE + 3*16 + 12] = 0 ;      //Kernel Stack Pointer(KSP) is Assumed to be 0
 [PROCESS_TABLE + 3*16 + 13] = 8*512 ;  //User stack pointer always points to logical page 8

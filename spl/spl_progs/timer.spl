@@ -17,7 +17,7 @@ while(i<16) do
 endwhile;
 
 //set reg r0 r1 r2 as arg1 arg2 arg3
-call MOD_5 ;
+call MOD_5 ;  //Calling SCHEDULER MODULE
 
 restore;
 
