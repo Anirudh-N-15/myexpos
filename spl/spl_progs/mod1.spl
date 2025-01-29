@@ -1,0 +1,64 @@
+alias funcNum R1 ;
+alias currPID R2 ;
+alias uap R3 ;
+
+if(funcNum == FREE_USER_AREA_PAGE) then
+    uap = [PROCESS_TABLE + currPID*16 + 11];
+    breakpoint;
+
+    multipush(R1,R2,R3);
+    R1 = RELEASE_PAGE;
+    R2 = uap ;
+    call MOD_2 ;
+    multipop(R1,R2,R3);
+
+    return;
+endif;
+
+
+if(funcNum == EXIT_PROCESS) then
+    multipush(R1,R2,R3);
+    R1 = FREE_PAGE_TABLE;
+    R2 = currPID ;
+    call MOD_1 ;
+    multipop(R1,R2,R3);
+
+    multipush(R1,R2,R3);
+    R1 = FREE_USER_AREA_PAGE;
+    R2 = currPID ;
+    call MOD_1 ;
+    multipop(R1,R2,R3);
+
+    [PROCESS_TABLE + currPID*16 + 4] = TERMINATED ;
+
+    return;
+endif;
+
+alias ptbr R4 ;
+alias i R5 ;
+
+if(funcNum == FREE_PAGE_TABLE) then
+    ptbr = [PROCESS_TABLE + currPID*16 + 14] ;
+    [ptbr + 0] = -1 ;
+    [ptbr + 1] = "0000" ;
+    [ptbr + 2] = -1 ;
+    [ptbr + 3] = "0000" ;
+
+    i =4;
+    while(i < 20) do
+        if( [ptbr + i] != -1) then
+            multipush(R0,R1,R2,R3,R4,R5);
+            R1 = RELEASE_PAGE ;
+            R2 = [ptbr+i] ;
+            call MOD_2 ;
+            multipop(R0,R1,R2,R3,R4,R5);
+
+            [ptbr + i] = -1;
+            [ptbr + i + 1] = "0000" ;
+        endif;
+       i = i + 2 ;
+    endwhile;
+  return;  
+endif;
+
+

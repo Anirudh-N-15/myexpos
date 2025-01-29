@@ -43,6 +43,31 @@ loadi(9,22);
 loadi(14,27); //Loading INT6, Terminal Read
 loadi(15,28);
 
+loadi(33,20); //Loading INT9, Exec System Call
+loadi(34,21);
+
+loadi(59,3); //Loading Inode + User Table
+loadi(60,4);
+
+alias i R0;
+
+i=0;
+
+[SYSTEM_STATUS_TABLE + 2] = 0 ; 
+
+while(i < 128) do
+    if(i < 83) then
+        [MEMORY_FREE_LIST + i] = 1 ;
+    else 
+        [MEMORY_FREE_LIST + i] = 0 ;
+        [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
+    endif;
+  i = i + 1;
+endwhile;  
+
+[SYSTEM_STATUS_TABLE + 3] = 0 ;
+
+
 [TERMINAL_STATUS_TABLE +1] = 0; //Indicates that the terminal is free before scheduling the first process
 
 PTBR = PAGE_TABLE_BASE + 20; //For init process. As idle occupies PTBR

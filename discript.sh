@@ -27,10 +27,17 @@ echo "INT 6"
 ./spl ./spl_progs/int6.spl
 echo "Console Interrupt"
 ./spl ./spl_progs/console.spl
+echo "INT 9"
+./spl ./spl_progs/int9.spl
+echo "Process Manager Module/ MOD_1"
+./spl ./spl_progs/mod1.spl
+echo "Memory Manager Module/ MOD_2"
+./spl ./spl_progs/mod2.spl
 
 
 cd /home/expos/myexpos/xfs-interface
 ./xfs-interface <<EOF
+fdisk
 load --os ../spl/spl_progs/startup.xsm
 load --init ../expl/expl_progs/init.xsm
 load --idle ../expl/expl_progs/idle.xsm
@@ -45,5 +52,8 @@ load --module 0 ../spl/spl_progs/mod0.xsm
 load --module 4 ../spl/spl_progs/mod4.xsm
 load --int=6 ../spl/spl_progs/int6.xsm
 load --int=console ../spl/spl_progs/console.xsm
+load --int=9 ../spl/spl_progs/int9.xsm
+load --module 1 ../spl/spl_progs/mod1.xsm
+load --module 2 ../spl/spl_prgos/mod2.xsm
 exit
 EOF
