@@ -2,6 +2,8 @@
 
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11] * 512 - 1 ; //Switching to the kernel stack
 
+print "Console" ;
+
 backup;
 
 alias reqPID R0 ;
@@ -24,4 +26,6 @@ restore ;
 
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13] ;
 
+print "console2" ;
+breakpoint;
 ireturn;

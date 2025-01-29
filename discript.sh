@@ -44,7 +44,6 @@ load --idle ../expl/expl_progs/idle.xsm
 load --int=7 ../spl/spl_progs/int7.xsm
 load --int=timer ../spl/spl_progs/timer.xsm
 load --module 7 ../spl/spl_progs/mod7boot.xsm
-load --int=10 ../spl/spl_progs/exhandler.xsm
 load --library ../expl/library.lib
 load --module 5 ../spl/spl_progs/mod5.xsm
 load --int=10 ../spl/spl_progs/int10.xsm
@@ -54,6 +53,7 @@ load --int=6 ../spl/spl_progs/int6.xsm
 load --int=console ../spl/spl_progs/console.xsm
 load --int=9 ../spl/spl_progs/int9.xsm
 load --module 1 ../spl/spl_progs/mod1.xsm
-load --module 2 ../spl/spl_prgos/mod2.xsm
+load --exec ../expl/expl_progs/odd.xsm
+load --exhandler ../spl/spl_progs/exhandler.xsm
 exit
 EOF

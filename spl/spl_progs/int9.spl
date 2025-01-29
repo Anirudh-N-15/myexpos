@@ -5,12 +5,13 @@ alias arg1 R1;
 userSP = SP ;
 
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP; //Saving SP
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11] * 512  -1 ;
 
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 9; //Setting mode flag to syscall num 9(exec)
 
-arg1 = [ PTBR + (userSP-4)*2/512 + (userSP-4)%512 ] ; //Name of file is arg1
+arg1 = [ [PTBR + (userSP-4)*2/512]*512 + (userSP-4)%512 ] ; //Name of file is arg1
 
-alias i R2 ;
+alias i R8 ;
 alias flag R3 ;
 alias inode R4;
 i =0;
@@ -24,10 +25,11 @@ while(i < MAX_FILE_NUM) do
     i = i +1;
 endwhile;
 
+
 if(flag == 0) then
     SP =[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] ;
     [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0 ;
-    [PTBR + (userSP -1)*2/512 + (userSP-1)%512] = -1 ;
+    [[PTBR + (userSP -1)*2/512]*512 + (userSP-1)%512] = -1 ;
     ireturn;
 endif;
 
@@ -47,10 +49,10 @@ alias uap R5 ;
 uap = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11];
 [MEMORY_FREE_LIST + uap] = 1;
 
-//Decremeting memory free count
-[SYSTEM_STATUS_TABLE +2] = [SYSTEM_STATUS_TABLE + 2] -1 ;
+//Incremeting memory free count
+[SYSTEM_STATUS_TABLE +2] = [SYSTEM_STATUS_TABLE + 2] +1 ;
 
-SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11];
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11]*512 -1;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 4] = RUNNING;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 7] = inode; 
 
@@ -62,36 +64,40 @@ SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11];
 //Heap
 multipush(R0,R1,R2,R3,R4,R5);
 R1 = GET_FREE_PAGE;
+R2 = [SYSTEM_STATUS_TABLE +1];
 call MOD_2 ;
-[PTBR + 4] = R0 ;  //Check here
+[PTBR + 4] = R0 ;
 [PTBR + 5] = "0110" ;
 multipop(R0,R1,R2,R3,R4,R5);
 
 
-multipush(R0,R1,R2,R3,R5,R7,R8,R9);
+multipush(R0,R1,R2,R3,R4,R5,R7,R8,R9);
 R1= GET_FREE_PAGE;
+R2 = [SYSTEM_STATUS_TABLE +1];
 call MOD_2;
-[PTBR + 6] = R0; //Also here
+[PTBR + 6] = R0;
 [PTBR + 7] = "0110";
-multipop(R0,R1,R2,R3,R5,R7,R8,R9);
+multipop(R0,R1,R2,R3,R4,R5,R7,R8,R9);
 
 i=0;
 
 while(i < 4) do
     if( [ INODE_TABLE + inode*16 + 8 +i] != -1) then
         multipush(R0,R1,R2,R3,R4,R5);
-
         R1 = GET_FREE_PAGE ;
+        R2 = [SYSTEM_STATUS_TABLE +1];
         call MOD_2 ;
 
-        multipop(R0,R1,R2,R3,R4,R5);
-
         [PTBR + 8 + i*2] = R0 ;
-        [PTBR + 8 + i*2 + 1] = "0110";
-
+        print [PTBR + 8 + i* 2];
+        print i;
+        [PTBR + 8 + i*2 + 1] = "0100"; 
+         multipop(R0,R1,R2,R3,R4,R5);
     else
+        print "else";
         multipush(R0,R1,R2,R3,R4,R5);
         R1 = GET_FREE_PAGE ;
+        R2 = [SYSTEM_STATUS_TABLE +1];
         call MOD_2 ;
 
         multipop(R0,R1,R2,R3,R4,R5);  //Just check whether to place after assigning page values
@@ -102,11 +108,12 @@ while(i < 4) do
 
     i = i + 1;
 endwhile;  
-        
+print [PTBR + 8 ];        
 //Allocating pages for stack
 
 multipush(R0,R1,R2,R3,R4,R5);
 R1 = GET_FREE_PAGE;
+R2 = [SYSTEM_STATUS_TABLE +1];
 call MOD_2 ;
 [PTBR + 16] = R0 ;
 [PTBR + 17] = "0110";
@@ -114,10 +121,13 @@ multipop(R0,R1,R2,R3,R4,R5);
 
 multipush(R0,R1,R2,R3,R4,R5);
 R1 = GET_FREE_PAGE;
+R2 = [SYSTEM_STATUS_TABLE +1];
 call MOD_2;
 [PTBR + 18] = R0 ;
 [PTBR + 19] = "0110" ;
 multipop(R0,R1,R2,R3,R4,R5);
+
+breakpoint;
 
 i=0;
 PTBR = PAGE_TABLE_BASE + 20 ;

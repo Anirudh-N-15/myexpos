@@ -12,10 +12,10 @@ if(funcNum == GET_FREE_PAGE) then
     endwhile;
     
     [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE +3] - 1 ; //Decrement wait_mem_count
-    [SYSTEM_STATUS_TABLE +2]  = [SYSTEM_STATUS_TABLE + 2] + 1; //Increment mem_free_count
+    [SYSTEM_STATUS_TABLE +2]  = [SYSTEM_STATUS_TABLE + 2] - 1; //Increment mem_free_count
 
     alias i R1 ;
-    i =0;
+    i = 83;
     while(i < 128) do
         if([MEMORY_FREE_LIST + i] != 0) then
             i = i + 1;
@@ -23,7 +23,9 @@ if(funcNum == GET_FREE_PAGE) then
             returnPageNum = i;
             break;
         endif;
-    endwhile;    
+    endwhile; 
+    [MEMORY_FREE_LIST + returnPageNum] = 1 ; 
+    R0 = returnPageNum;
 endif;
 
 
@@ -32,21 +34,19 @@ if(funcNum == RELEASE_PAGE) then
 
     if([MEMORY_FREE_LIST + R2] == 0) then
         [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1; //Incrementing mem_free_count
+        
+     alias pid R2 ;
+        pid = 0;
+        while(pid < 16) do
+            if([PROCESS_TABLE + pid*16 + 1]!= -1 && [ PROCESS_TABLE + pid*16 + 4] == WAIT_MEM) then
+                [PROCESS_TABLE + pid*16 + 4] = READY ;
+            endif;
+          pid = pid + 1 ; 
+        endwhile;
     endif;
-
-    alias pid R2 ;
-    pid = 0;
-    while(pid < 16) do
-        if([ PROCESS_TABLE + pid*16 + 4] == WAIT_MEM) then
-            [PROCESS_TABLE + pid*16 + 4] = READY ;
-        endif;
-       pid = pid + 1 ; 
-
-    endwhile;
-endif;
-
 R0 = returnPageNum ;
-return;
+endif;
+    return;
 
 
 

@@ -1,11 +1,10 @@
 alias functionNum R1;
 alias currentPID R2;
 
+//Terminal_read = 4
 if(functionNum == 4) then
 	multipush(R0,R1,R2,R3);
-	//funcNum = ACQUIRE_TERMINAL ;
-	//currPID = [SYSTEM_STATUS_TABLE + 1] ;
-	R1 = 8;
+    R1 = 8;
 	R2 = currentPID;
 	call MOD_0;
 	multipop(R0,R1,R2,R3);
@@ -23,6 +22,7 @@ if(functionNum == 4) then
 	return;
 endif;	
 
+//Terminal_Write =3
 if(functionNum == 3) then
 	multipush(R0, R1, R2, R3);
 	R1 = 8;
