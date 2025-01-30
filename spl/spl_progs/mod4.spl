@@ -1,5 +1,25 @@
 alias functionNum R1;
 alias currentPID R2;
+alias pagenum R3;
+alias blocknum R4;
+
+if(functionNum == DISK_LOAD) then
+   multipush(R1,R2,R3,R4);
+   R1 = 3; //Function number of Acquire disk
+   R2 = currentPID ;
+   call MOD_0;
+   multipop(R1,R2,R3,R4); 
+   [DISK_STATUS_TABLE +2] = pagenum;
+   [DISK_STATUS_TABLE +3] = blocknum;
+   [DISK_STATUS_TABLE +1] = 0 ;
+   load(pagenum, blocknum);
+   [PROCESS_TABLE + currentPID*16 + 4] = WAIT_DISK ;
+   multipush(R1,R2,R3,R4);
+   call MOD_5 ;
+   multipop(R1,R2,R3,R4);
+
+   return;
+endif;    
 
 //Terminal_read = 4
 if(functionNum == 4) then
@@ -29,15 +49,13 @@ if(functionNum == 3) then
 	R2 = currentPID;
 	call MOD_0;
 	multipop(R0,R1,R2,R3);
-	print R3 ;
+    print R3;
+    multipush(R0, R1, R2, R3);
+    R1 =9 ;
+    R2 = currentPID ;
+    call MOD_0 ;
+
+    multipop(R0, R1, R2, R3);
+    return;
 endif;
-
-multipush(R0, R1, R2, R3);
-R1 =9 ;
-R2 = currentPID ;
-call MOD_0 ;
-
-multipop(R0, R1, R2, R3);
-
-return;
 

@@ -33,6 +33,8 @@ echo "Process Manager Module/ MOD_1"
 ./spl ./spl_progs/mod1.spl
 echo "Memory Manager Module/ MOD_2"
 ./spl ./spl_progs/mod2.spl
+echo "Disk Interrupt"
+./spl ./spl_progs/disk.spl
 
 
 cd /home/expos/myexpos/xfs-interface
@@ -55,5 +57,6 @@ load --int=9 ../spl/spl_progs/int9.xsm
 load --module 1 ../spl/spl_progs/mod1.xsm
 load --exec ../expl/expl_progs/odd.xsm
 load --exhandler ../spl/spl_progs/exhandler.xsm
+load --int=disk ../spl/spl_progs/disk.xsm
 exit
 EOF
