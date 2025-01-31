@@ -6,7 +6,7 @@ int main(){
     begin
       while(1==1)do
         breakpoint;
-        j = exposcall("Write", -2, "Idle");
+        //j = exposcall("Write", -2, "Idle");
         i=1;
         endwhile;
         return 0;
