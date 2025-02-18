@@ -1,18 +1,22 @@
 alias funcNum R1 ;
 alias currPID R2 ;
 alias uap R3 ;
+
+//print "inside mod1 1";
+
 if(funcNum == FREE_USER_AREA_PAGE) then
     uap = [PROCESS_TABLE + currPID*16 + 11];
-    breakpoint;
+   // breakpoint;
 
     multipush(R1,R2,R3);
     R1 = RELEASE_PAGE;
     R2 = uap ;
     call MOD_2 ;
-    multipop(R1,R2,R3);
+        multipop(R1,R2,R3);
     return;
 endif;
 
+//print "inside mod1 2" ;
 
 if(funcNum == EXIT_PROCESS) then
     multipush(R1,R2,R3);
@@ -31,24 +35,57 @@ if(funcNum == EXIT_PROCESS) then
     return;
 endif;
 
-alias ptbr R4 ;
-alias i R5 ;
+//print "inside mod1 2";
 
-if(funcNum == FREE_PAGE_TABLE) then
+if(funcNum == FREE_PAGE_TABLE) then 
+    PTBR  = PAGE_TABLE_BASE + currPID*20 ;
 
-    i =4;
-    while(i < 20) do
-         multipush(R0,R1,R2,R3,R4,R5);
-            R1 = RELEASE_PAGE ;
-            R2 = [PAGE_TABLE_BASE + currPID*20 + i] ;
-            call MOD_2 ;
-            multipop(R0,R1,R2,R3,R4,R5);
+    //Invalidate Library
+    //[PTBR + 0] = -1;
+    //[PTBR + 1] = "0000" ;
+    //[PTBR + 2] = -1;
+    //[PTBR + 3] = "0000" ;
 
-            [PAGE_TABLE_BASE + currPID*20 + i]  = -1;
-            [PAGE_TABLE_BASE + currPID*20 + i + 1] = "0000" ;
-               i = i + 2 ;
+    alias index R4;
+    index = 4; 
+    while(index < 20) do
+        if([PTBR + index] != -1) then
+            multipush(R1,R2,R3);
+            R1 = FREE_USER_AREA_PAGE;
+            R2 = [PTBR + index];
+            call MOD_1;
+            multipop(R1,R2,R3);
+            [PTBR + index] = -1;
+            [PTBR + index + 1] = "0000";
+
+           //print "in loop" ;
+
+        endif;
+
+        index = index + 2;
     endwhile;
-  return;  
+    index = 0;
+    while(index < 10) do
+        if([DISK_MAP_TABLE + currPID*10 + index] != -1) then
+            //Check stack or heap
+            if((index < 4) || (index > 7)) then
+                //Invoke Release block function
+                multipush(R1,R2,R3);
+                R1 = RELEASE_BLOCK;
+                R2 = [DISK_MAP_TABLE + currPID*10 + index];
+                call MOD_2;
+                multipop(R1,R2,R3);
+
+             endif;
+         endif;
+
+         //Setting entry to -1
+         [DISK_MAP_TABLE + currPID*10 + index] = -1;
+
+         index = index + 1;
+    endwhile;
+    return;  
 endif;
 
+return;
 

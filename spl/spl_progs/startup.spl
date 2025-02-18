@@ -1,4 +1,4 @@
-breakpoint;
+//breakpoint;
 
 loadi(54,67);//Loading the Boot Module i.e module 7 from disk to memory
 loadi(55,68);
@@ -7,10 +7,10 @@ loadi(69,11); //Loading the idle code
 loadi(70,12);
 
 SP = 82 * 512 - 1; //Setting the SP to point to where idle code is
-breakpoint;
+//breakpoint;
 call BOOT_MODULE ;
 
-breakpoint;
+//breakpoint;
 
 //The below code is written wrt idle code
 PTBR = PAGE_TABLE_BASE ;
@@ -56,7 +56,7 @@ PTLR = 10 ;
 
 [SYSTEM_STATUS_TABLE +1] = 0;
 SP = 8 * 512 ;
-breakpoint;
+//breakpoint;
 ireturn;
 
 

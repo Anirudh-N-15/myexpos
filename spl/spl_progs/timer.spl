@@ -1,4 +1,4 @@
-breakpoint; //Assignment code.
+//breakpoint; //Assignment code.
 
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13] = SP ; //Saving the context of current Process
 
@@ -25,6 +25,6 @@ SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13] ;
 
 // [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9] = 0 ;
 
-breakpoint; //Assignment 2. Just remove it for the normal code
+//breakpoint; //Assignment 2. Just remove it for the normal code
 
 ireturn;

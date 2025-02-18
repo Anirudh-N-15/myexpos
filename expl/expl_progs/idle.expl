@@ -5,8 +5,8 @@ int main(){
     enddecl
     begin
       while(1==1)do
-        breakpoint;
-        //j = exposcall("Write", -2, "Idle");
+        //breakpoint;
+       // j = exposcall("Write", -2, "Idle");
         i=1;
         endwhile;
         return 0;

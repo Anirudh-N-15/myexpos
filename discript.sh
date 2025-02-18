@@ -3,6 +3,7 @@ cd /home/expos/myexpos/expl
 ./expl ./expl_progs/init.expl
 ./expl ./expl_progs/exe.expl
 ./expl ./expl_progs/primes.expl
+./expl ./expl_progs/linked.expl
 
 cd /home/expos/myexpos/spl
 echo "------------Startup Code"
@@ -55,7 +56,7 @@ load --int=6 ../spl/spl_progs/int6.xsm
 load --int=console ../spl/spl_progs/console.xsm
 load --int=9 ../spl/spl_progs/int9.xsm
 load --module 1 ../spl/spl_progs/mod1.xsm
-load --exec ../expl/expl_progs/odd.xsm
+load --exec ../expl/expl_progs/linked.xsm
 load --exhandler ../spl/spl_progs/exhandler.xsm
 load --int=disk ../spl/spl_progs/disk.xsm
 exit

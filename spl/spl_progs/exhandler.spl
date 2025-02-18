@@ -1,1 +1,81 @@
-halt;
+breakpoint;
+
+//Mode flag set to -1
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]  * 16 + 9] = -1;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
+
+//print "In Exhandler" ;
+
+backup;
+
+multipush(EIP);
+
+if(EC != 0 || ([PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13] == (PTLR * 512 -1))) then 
+
+    //print "IF in EC";
+
+    if(EC == 1) then    
+        print "Illegal Instrc";
+    endif;
+    if(EC == 2) then
+        print "Seg Fault";
+    endif;
+    if(EC == 3) then
+        print "Arithmetic Exception";
+    endif;
+
+    print "exiting";
+    breakpoint;
+
+    R1 = EXIT_PROCESS ;
+    R2 = [SYSTEM_STATUS_TABLE  + 1];
+    call MOD_1 ;
+    call MOD_5 ;
+
+else    
+    if((EPN == 2) || (EPN == 3)) then
+        //print "heap";
+        //Call getFreePage to allocate 2 pages for heap
+        R1 = GET_FREE_PAGE;
+        call MOD_2;
+        [PTBR + 4] = R0;
+        [PTBR + 5] = "1110";
+
+        R1 = GET_FREE_PAGE;
+        call MOD_2; 
+        [PTBR + 6] = R0;
+        [PTBR + 7] = "1110";
+
+        //print R0 ;
+
+        breakpoint;
+    endif;
+
+    if((EPN < 8) && (EPN >= 4)) then
+        print "code";
+        R1 = GET_CODE_PAGE;
+        R2 = [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE +1]*10 + EPN];
+        print R2 ;
+        call MOD_2;
+
+        [PTBR + 2 * EPN] = R0 ;
+        [PTBR + 2 * EPN +1] = "1100" ;
+        
+        multipop(R0,R1,R2);
+    endif;
+endif;
+    
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 9] = 0;
+
+    multipop(EIP);
+    restore;
+    SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] ; 
+    SP = SP + 1;
+
+    [[PTBR + SP*2/512]*512 + SP % 512] = EIP;
+
+    ireturn;
+
+

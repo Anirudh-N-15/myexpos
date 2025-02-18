@@ -1,7 +1,18 @@
 alias funcNum R1 ;
 alias returnPageNum R2;
 
+if(funcNum == RELEASE_BLOCK) then
+
+   // print "release block" ;
+
+    alias blockNum R2 ;
+    [DISK_FREE_LIST + blockNum] = 0;
+    return;
+endif;    
+
+
 if(funcNum == GET_FREE_PAGE) then
+
     [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE +3] + 1 ; //Increment wait_mem_count
     
     while([SYSTEM_STATUS_TABLE +2] == 0) do
@@ -12,9 +23,9 @@ if(funcNum == GET_FREE_PAGE) then
     endwhile;
     
     [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE +3] - 1 ; //Decrement wait_mem_count
-    [SYSTEM_STATUS_TABLE +2]  = [SYSTEM_STATUS_TABLE + 2] - 1; //Increment mem_free_count
+    [SYSTEM_STATUS_TABLE +2]  = [SYSTEM_STATUS_TABLE + 2] - 1; 
 
-    alias i R1 ;
+    alias i R6 ;
     i = 83;
     while(i < 128) do
         if([MEMORY_FREE_LIST + i] != 0) then
@@ -25,7 +36,12 @@ if(funcNum == GET_FREE_PAGE) then
         endif;
     endwhile; 
     [MEMORY_FREE_LIST + returnPageNum] = 1 ; 
-    R0 = returnPageNum;
+    R0 = returnPageNum ;
+
+    //print R0 ;
+    //print "in getfreepage2"; 
+
+    return;
 endif;
 
 
@@ -44,10 +60,53 @@ if(funcNum == RELEASE_PAGE) then
           pid = pid + 1 ; 
         endwhile;
     endif;
-R0 = returnPageNum ;
-endif;
+    R0 = returnPageNum ;
     return;
+endif;
 
+if(funcNum == GET_CODE_PAGE) then
 
+    //print "get code page";
+
+    alias i R6 ; 
+    alias blockNum R2 ;
+    alias index R7 ;
+    alias ptbr R8 ;
+    i=0;
+    
+
+    while(i < 16) do
+        index = 4 ;
+        while(index < 8) do
+            ptbr = [PROCESS_TABLE + i*16 + 14];
+            if(([DISK_MAP_TABLE + i *10 + index] == blockNum) && ([ptbr + 2*index]!= -1)) then
+                 R0 = [ptbr + 2*index] ;
+                [MEMORY_FREE_LIST + R0] = [MEMORY_FREE_LIST + R0] + 1;
+                    return;
+            endif;
+            index = index + 1;
+        endwhile;
+        i = i +1;
+    endwhile;   
+
+    //Invoke Get free page function
+    multipush(R1,R2);
+    R1 = GET_FREE_PAGE;
+    call MOD_2;
+    multipop(R1,R2);
+
+    //Load the page into memory by invoking disk load function
+    multipush(R0,R1,R2,R3,R4,R5);
+    
+    R1 = DISK_LOAD;
+    R4 = blockNum ; 
+    R2 = [SYSTEM_STATUS_TABLE  +1];
+    R3 = R0 ;
+
+    call MOD_4 ;
+    multipop(R0,R1,R2,R3,R4,R5);
+    
+    return ;
+ endif;  
 
 
