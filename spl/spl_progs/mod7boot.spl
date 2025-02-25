@@ -59,6 +59,9 @@ loadi(60,4);
 loadi(6,19); //Loading Disk INT routine
 loadi(7,20);
 
+loadi(18,31); //Loading Fork syscall/ Interrupt 8 routine
+loadi(19,32);
+
 alias i R0;
 i=0;
 

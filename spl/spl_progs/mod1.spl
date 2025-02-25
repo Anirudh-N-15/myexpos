@@ -4,6 +4,27 @@ alias uap R3 ;
 
 //print "inside mod1 1";
 
+if(funcNum == GET_PCB_ENTRY) then
+    alias i R4 ;
+    i = 1;
+    while(i < 16) do 
+        if([PROCESS_TABLE + i*16 + 4] == TERMINATED) then
+            break;
+        endif;  
+        i = i + 1 ;
+    endwhile;   
+    if(i == 16) then
+        R0 = - 1;
+    else 
+        [PROCESS_TABLE + i*16 + 1] = i ;
+        [PROCESS_TABLE + i*16 + 4] = ALLOCATED ;
+        [PROCESS_TABLE + i*16 + 14] = PAGE_TABLE_BASE + 20*i ;
+        [PROCESS_TABLE + i*16 + 15] = 10 ;
+        R0 = i ;
+    endif; 
+  return;
+endif;  
+
 if(funcNum == FREE_USER_AREA_PAGE) then
     uap = [PROCESS_TABLE + currPID*16 + 11];
    // breakpoint;

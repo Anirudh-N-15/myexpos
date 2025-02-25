@@ -38,6 +38,7 @@ PTLR = [PROCESS_TABLE + newPID * 16 + 15];
 
 if([PROCESS_TABLE + newPID*16 + 4] == CREATED) then
 	SP = [PROCESS_TABLE + newPID * 16 + 13];
+    BP = [[PROCESS_TABLE + newPID * 16 + 11] * 512];
 	[PROCESS_TABLE + newPID * 16 + 4] = RUNNING;
 	[PROCESS_TABLE + newPID * 16 + 9] = 0;
 	ireturn;

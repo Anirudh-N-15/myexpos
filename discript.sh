@@ -4,6 +4,8 @@ cd /home/expos/myexpos/expl
 ./expl ./expl_progs/exe.expl
 ./expl ./expl_progs/primes.expl
 ./expl ./expl_progs/linked.expl
+./expl ./expl_progs/odd.expl
+./expl ./expl_progs/even.expl
 
 cd /home/expos/myexpos/spl
 echo "------------Startup Code"
@@ -36,6 +38,8 @@ echo "Memory Manager Module/ MOD_2"
 ./spl ./spl_progs/mod2.spl
 echo "Disk Interrupt"
 ./spl ./spl_progs/disk.spl
+echo "INT 8"
+./spl ./spl_progs/int8.spl
 
 
 cd /home/expos/myexpos/xfs-interface
@@ -59,5 +63,8 @@ load --module 1 ../spl/spl_progs/mod1.xsm
 load --exec ../expl/expl_progs/linked.xsm
 load --exhandler ../spl/spl_progs/exhandler.xsm
 load --int=disk ../spl/spl_progs/disk.xsm
+load --exec ../expl/expl_progs/odd.xsm
+load --exec ../expl/expl_progs/even.xsm
+load --int=8 ../spl/spl_progs/int8.xsm
 exit
 EOF

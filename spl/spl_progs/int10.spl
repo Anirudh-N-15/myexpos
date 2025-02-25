@@ -1,23 +1,17 @@
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 4] = TERMINATED ;
 breakpoint;
 
-alias currPID R10;
-alias i R11 ;
-alias flag R12 ;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 10 ;
 
-currPID = [SYSTEM_STATUS_TABLE+1] ;
-i =1 ;
-flag = 0;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13] = SP ;
 
-while(i < 16) do
-	if([PROCESS_TABLE + i*16 + 4] != TERMINATED) then
-		call SCHEDULER ;
-	endif;
-	i = (i+1) ;
-endwhile;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11]* 512 - 1;
 
-//if([PROCESS_TABLE+4] == 1) then
-//	call SCHEDULER ;
-//endif;	
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 4] = TERMINATED ;
+
+R1 = EXIT_PROCESS ;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+call PROCESS_MANAGER ;
+call SCHEDULER ;
 
 halt;
+

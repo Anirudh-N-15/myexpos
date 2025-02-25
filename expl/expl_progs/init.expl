@@ -1,17 +1,18 @@
 int main(){
 
 decl
-    int i,temp,n;
-    str file;
+    int temp,pid;
 enddecl    
 
 begin
-    temp = exposcall("Write", -2, "FILE:");
-    temp = exposcall("Read", -1, file);
-
-    temp = exposcall("Exec", file);
-    temp = exposcall("Write", -2, "ERROR");
-
+    pid = exposcall("Fork");
+    temp = exposcall("Write",-2,pid);
+    if(pid == 0) then
+        temp = exposcall("Exec","odd.xsm");
+    else
+        temp = exposcall("Exec","even.xsm");
+    endif;    
+   
     return 0 ;
 end
 }
