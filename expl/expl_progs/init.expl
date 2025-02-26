@@ -1,18 +1,58 @@
-int main(){
+type
+list {
+    int val;
+    list next;
+}
+endtype
 
 decl
-    int temp,pid;
-enddecl    
+    list head, p, q;
+enddecl
 
-begin
-    pid = exposcall("Fork");
-    temp = exposcall("Write",-2,pid);
-    if(pid == 0) then
-        temp = exposcall("Exec","odd.xsm");
-    else
-        temp = exposcall("Exec","even.xsm");
-    endif;    
-   
-    return 0 ;
-end
-}
+int main() {
+    decl
+       int temp, pid, x, i;
+    enddecl
+    begin
+        
+        temp = exposcall("Heapset");
+        head = exposcall("Alloc", 2);
+
+        head.val = 1;
+        q = head;
+        i = 2;
+        while (i <= 100) do
+            p = exposcall("Alloc", 2);
+            p.val = i;
+            p.next = null;
+            q.next = p;
+            q = p;
+            i = i + 1;
+        endwhile;
+        
+        pid = exposcall("Fork");
+       
+        if (pid == 0) then
+            p = head;
+            while (p != null) do
+                temp = exposcall("Write", -2, p.val);
+                p = p.next;
+                if (p == null) then
+                    break;
+               endif;
+                p = p.next;
+            endwhile;
+        else
+            q = head.next;
+            while (q != null) do
+                temp = exposcall("Write", -2, q.val);
+                q = q.next;
+                if (q == null) then
+                    break;
+                endif;
+                q = q.next;
+            endwhile;
+        endif;
+        return 0;
+    end
+} 

@@ -4,7 +4,6 @@ decl
 enddecl
 
 begin
-    temp = exposcall("Write", -2, "even");
     i=0;
     while(i <= 100) do
         temp = exposcall("Write", -2, i);
