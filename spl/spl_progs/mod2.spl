@@ -5,7 +5,7 @@ if(funcNum == RELEASE_BLOCK) then
 
    // print "release block" ;
 
-    alias blockNum R2 ;
+    alias blockNum R3 ;
     [DISK_FREE_LIST + blockNum] = 0;
     return;
 endif;    
@@ -60,7 +60,7 @@ if(funcNum == RELEASE_PAGE) then
           pid = pid + 1 ; 
         endwhile;
     endif;
-    R0 = returnPageNum ;
+    R0 = returnPageNum;
     return;
 endif;
 
@@ -73,7 +73,6 @@ if(funcNum == GET_CODE_PAGE) then
     alias index R7 ;
     alias ptbr R8 ;
     i=0;
-    
 
     while(i < 16) do
         index = 4 ;
@@ -94,17 +93,16 @@ if(funcNum == GET_CODE_PAGE) then
     R1 = GET_FREE_PAGE;
     call MOD_2;
     multipop(R1,R2);
+    print R0 ;
 
-    //Load the page into memory by invoking disk load function
-    multipush(R0,R1,R2,R3,R4,R5);
-    
+    multipush(R1,R2,R3,R4);
     R1 = DISK_LOAD;
     R4 = blockNum ; 
     R2 = [SYSTEM_STATUS_TABLE  +1];
     R3 = R0 ;
 
     call MOD_4 ;
-    multipop(R0,R1,R2,R3,R4,R5);
+    multipop(R1,R2,R3,R4);
     
     return ;
  endif;  

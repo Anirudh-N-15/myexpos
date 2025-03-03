@@ -6,6 +6,8 @@ cd /home/expos/myexpos/expl
 ./expl ./expl_progs/linked.expl
 ./expl ./expl_progs/odd.expl
 ./expl ./expl_progs/even.expl
+./expl ./expl_progs/pid.expl
+./expl ./expl_progs/fork3.expl
 
 cd /home/expos/myexpos/spl
 echo "------------Startup Code"
@@ -35,11 +37,13 @@ echo "INT 9"
 echo "Process Manager Module/ MOD_1"
 ./spl ./spl_progs/mod1.spl
 echo "Memory Manager Module/ MOD_2"
-./spl ./spl_progs/mod2.spl
+./spl ./spl_progs/newmod2.spl
 echo "Disk Interrupt"
 ./spl ./spl_progs/disk.spl
 echo "INT 8"
-./spl ./spl_progs/int8.spl
+./spl ./spl_progs/newint8.spl
+echo "INT 11"
+./spl ./spl_progs/int11.spl
 
 
 cd /home/expos/myexpos/xfs-interface
@@ -65,6 +69,11 @@ load --exhandler ../spl/spl_progs/exhandler.xsm
 load --int=disk ../spl/spl_progs/disk.xsm
 load --exec ../expl/expl_progs/odd.xsm
 load --exec ../expl/expl_progs/even.xsm
-load --int=8 ../spl/spl_progs/int8.xsm
+load --int=8 ../spl/spl_progs/newint8.xsm
+load --int=11 ../spl/spl_progs/int11.xsm
+load --int=15 ../spl/spl_progs/int15.xsm
+load --exec ../expl/expl_progs/pid.xsm
+load --exec ../expl/expl_progs/fork3.xsm
+load --module 2 ../spl/spl_progs/newmod2.xsm
 exit
 EOF

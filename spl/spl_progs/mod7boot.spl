@@ -62,6 +62,12 @@ loadi(7,20);
 loadi(18,31); //Loading Fork syscall/ Interrupt 8 routine
 loadi(19,32);
 
+loadi(24,37); //Loading INT 11/ Signal,Wait,getpid,getppid
+loadi(25,38);
+
+loadi(32,45); //Loading INT 15/ Shutdown syscall
+loadi(33,46);
+
 alias i R0;
 i=0;
 

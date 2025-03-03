@@ -52,6 +52,20 @@ if(funcNum == EXIT_PROCESS) then
     call MOD_1 ;
     multipop(R1,R2,R3);
 
+    if([PROCESS_TABLE + currPID*16 + 9]!= 9) then
+        alias i R4;
+        i=0;
+        while(i < 16) do
+            if( [PROCESS_TABLE + i*16 + 4] == WAIT_PROCESS && [PROCESS_TABLE + i*16 + 5] == currPID) then
+                [PROCESS_TABLE + i*16 + 4] = READY ;
+            endif;
+            if( [PROCESS_TABLE + i*16 + 2] == currPID ) then
+                [PROCESS_TABLE + i*16 + 2] = -1 ;
+            endif;
+           i = i + 1;
+        endwhile;
+     endif;   
+
     [PROCESS_TABLE + currPID*16 + 4] = TERMINATED ;
     return;
 endif;
@@ -62,19 +76,19 @@ if(funcNum == FREE_PAGE_TABLE) then
     PTBR  = PAGE_TABLE_BASE + currPID*20 ;
 
     //Invalidate Library
-    //[PTBR + 0] = -1;
-    //[PTBR + 1] = "0000" ;
-    //[PTBR + 2] = -1;
-    //[PTBR + 3] = "0000" ;
+    [PTBR + 0] = -1;
+    [PTBR + 1] = "0000" ;
+    [PTBR + 2] = -1;
+    [PTBR + 3] = "0000" ;
 
     alias index R4;
     index = 4; 
     while(index < 20) do
         if([PTBR + index] != -1) then
             multipush(R1,R2,R3);
-            R1 = FREE_USER_AREA_PAGE;
+            R1 = RELEASE_PAGE;
             R2 = [PTBR + index];
-            call MOD_1;
+            call MOD_2;
             multipop(R1,R2,R3);
             [PTBR + index] = -1;
             [PTBR + index + 1] = "0000";
@@ -85,7 +99,8 @@ if(funcNum == FREE_PAGE_TABLE) then
 
         index = index + 2;
     endwhile;
-    index = 0;
+    breakpoint;
+    index = 2;
     while(index < 10) do
         if([DISK_MAP_TABLE + currPID*10 + index] != -1) then
             //Check stack or heap
@@ -94,19 +109,14 @@ if(funcNum == FREE_PAGE_TABLE) then
                 multipush(R1,R2,R3);
                 R1 = RELEASE_BLOCK;
                 R2 = [DISK_MAP_TABLE + currPID*10 + index];
+                R3 = currPID;
                 call MOD_2;
                 multipop(R1,R2,R3);
 
              endif;
+             [DISK_MAP_TABLE + currPID*10 + index] = -1;
          endif;
-
-         //Setting entry to -1
-         [DISK_MAP_TABLE + currPID*10 + index] = -1;
-
          index = index + 1;
     endwhile;
     return;  
 endif;
-
-return;
-

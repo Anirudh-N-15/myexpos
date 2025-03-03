@@ -1,15 +1,16 @@
 //exec system call
+
 alias userSP R0;
 alias arg1 R1;
 
 userSP = SP ;
 
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP; //Saving SP
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP; 
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11] * 512  -1 ;
 
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 9; //Setting mode flag to syscall num 9(exec)
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 9; 
 
-arg1 = [ [PTBR + (userSP-4)*2/512]*512 + (userSP-4)%512 ] ; //Name of file is arg1
+arg1 = [ [PTBR + (userSP-4)*2/512]*512 + (userSP-4)%512 ] ; 
 
 alias i R8 ;
 alias flag R3 ;
@@ -40,12 +41,11 @@ R2 = [SYSTEM_STATUS_TABLE +1];
 call MOD_1;
 multipop(R0,R1,R2,R3,R4);
 
+
 alias uap R5 ;
-
-
 uap = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11]; //Incrementing mem free list
-[MEMORY_FREE_LIST + uap] = 1;
-[SYSTEM_STATUS_TABLE +2] = [SYSTEM_STATUS_TABLE + 2] +1 ; //Incrementing mem free count
+[MEMORY_FREE_LIST + uap] = [MEMORY_FREE_LIST + uap] + 1;
+[SYSTEM_STATUS_TABLE +2] = [SYSTEM_STATUS_TABLE + 2] - 1 ; 
 
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11]*512 -1; //Set SP to new kernel stack
 
@@ -54,7 +54,7 @@ SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11]*512 -1; //Set SP to new 
 i=0;
 while(i < 16) do
     [[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11 ] * 512 + RESOURCE_TABLE_OFFSET + i] = -1;
-    i = i + 1;
+    i = i + 2;
 endwhile;
 
 //Set status of new process status and inode index
@@ -66,13 +66,11 @@ endwhile;
 
 multipush(R0,R1,R2,R3,R4,R5,R8);
 R1 = GET_FREE_PAGE;
-R2 = [SYSTEM_STATUS_TABLE + 1];
 call MOD_2 ;
 [PTBR + 16] = R0;
 [PTBR + 17] = "0110";
 
 R1 = GET_FREE_PAGE;
-R2 = [SYSTEM_STATUS_TABLE + 1];
 call MOD_2 ;
 [PTBR + 18] = R0;
 [PTBR + 19] = "0110";
@@ -118,6 +116,7 @@ multipop(R0,R1,R2,R3,R4,R5);
 [PTBR + 13] = "0000";
 [PTBR + 14] = -1;
 [PTBR + 15] = "0000";
+//breakpoint;
 
 //Setting up the Disk Map table
 alias diskMapTable R9 ;
@@ -135,7 +134,7 @@ diskMapTable = DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 ;
 [diskMapTable + 8] = -1;                                      //Stack 1
 [diskMapTable + 9] = -1;                                      //Stack 2  
 
-breakpoint;
+//breakpoint;
 
 [[PTBR + 16] * 512] = [[PTBR + 8 ] * 512  +1];
 
@@ -143,7 +142,5 @@ SP = 8 * 512 ;
 
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE]* 16 + 9] = 0 ;
 
-//print " in int9 3";
-breakpoint;
 ireturn ;
 

@@ -1,58 +1,34 @@
-type
-list {
-    int val;
-    list next;
-}
-endtype
-
+int main()
+{
 decl
-    list head, p, q;
+    int temp, pid, a;
+    string input;
 enddecl
-
-int main() {
-    decl
-       int temp, pid, x, i;
-    enddecl
-    begin
-        
-        temp = exposcall("Heapset");
-        head = exposcall("Alloc", 2);
-
-        head.val = 1;
-        q = head;
-        i = 2;
-        while (i <= 100) do
-            p = exposcall("Alloc", 2);
-            p.val = i;
-            p.next = null;
-            q.next = p;
-            q = p;
-            i = i + 1;
-        endwhile;
-        
-        pid = exposcall("Fork");
-       
-        if (pid == 0) then
-            p = head;
-            while (p != null) do
-                temp = exposcall("Write", -2, p.val);
-                p = p.next;
-                if (p == null) then
-                    break;
-               endif;
-                p = p.next;
-            endwhile;
-        else
-            q = head.next;
-            while (q != null) do
-                temp = exposcall("Write", -2, q.val);
-                q = q.next;
-                if (q == null) then
+begin
+    a=1;
+    while(a == 1) do
+        temp = exposcall("Write",-2,"---Enter---");
+        temp = exposcall("Read",-1, input);
+        if(input != "Shutdown") then
+            pid = exposcall("Fork");
+            if(pid < 0) then
+                temp = exposcall("Write",-2, "Fork Failure");
+                continue;
+            endif;
+            if(pid != 0) then
+                temp = exposcall("Wait",pid);
+            else
+                temp = exposcall("Exec",input);
+                if(temp != 0) then
+                    temp = exposcall("Write",-2, "BAD COMMAND");
                     break;
                 endif;
-                q = q.next;
-            endwhile;
+            endif;
+        else
+            temp = exposcall("Shutdown");
+            break;
         endif;
-        return 0;
-    end
-} 
+    endwhile;
+    return 0;
+end
+}

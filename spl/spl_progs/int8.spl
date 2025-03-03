@@ -77,13 +77,13 @@ i = 0;
 i=0;
     while(i < 16) do 
         [newPTBR + i] = [PTBR + i];
-        [newPTBR + i + 1] = [PTBR + i];
+        [newPTBR + i + 1] = [PTBR + i + 1];
         if([newPTBR + i] != -1) then
             [MEMORY_FREE_LIST + [newPTBR + i]] = [MEMORY_FREE_LIST + [newPTBR +i]] + 1 ;
         endif;
     i = i + 2 ;
     endwhile;
-
+    //breakpoint;
 
 i=0;
 while(i < 512) do
