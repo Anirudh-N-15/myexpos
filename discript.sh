@@ -11,6 +11,7 @@ cd /home/expos/myexpos/expl
 ./expl ./expl_progs/readw.expl
 ./expl ./expl_progs/parent.expl
 ./expl ./expl_progs/child.expl
+./expl ./expl_progs/merge.expl
 
 
 cd /home/expos/myexpos/spl
@@ -88,6 +89,7 @@ load --int=13 ../spl/spl_progs/int13.xsm
 load --int=14 ../spl/spl_progs/int14.xsm
 load --exec ../expl/expl_progs/parent.xsm
 load --exec ../expl/expl_progs/child.xsm
+load --exec ../expl/expl_progs/merge.xsm
 load --module 2 ../spl/spl_progs/newmod2.xsm
 exit
 EOF
