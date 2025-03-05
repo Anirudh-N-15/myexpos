@@ -52,6 +52,8 @@ echo "INT 13"
 ./spl ./spl_progs/int13.spl
 echo "INT 14"
 ./spl ./spl_progs/int14.spl
+echo "INT 15"
+./spl ./spl_progs/int15.spl
 
 cd /home/expos/myexpos/xfs-interface
 ./xfs-interface <<EOF

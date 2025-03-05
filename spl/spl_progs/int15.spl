@@ -1,0 +1,10 @@
+alias taskManager R0 ;
+taskManager = SYSTEM_STATUS_TABLE + 24 ;
+print "ContextSwitches:";
+print [taskManager];
+print "MaxMemUse:";
+print [taskManager +1];
+print "DiskAcceses:";
+print [taskManager +2];
+
+halt;

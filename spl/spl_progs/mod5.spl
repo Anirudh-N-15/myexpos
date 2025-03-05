@@ -7,6 +7,9 @@ multipush(BP) ; //Pushing BP onto kernel stack.Actually saving the values of the
 
 alias PTentry R12 ;
 
+//Number of context switches
+[SYSTEM_STATUS_TABLE + 24] = [SYSTEM_STATUS_TABLE +24] + 1;
+
 [PROCESS_TABLE + currPID * 16 + 12] = SP % 512;
 [PROCESS_TABLE + currPID * 16 + 14] = PTBR;
 [PROCESS_TABLE + currPID * 16 + 15] = PTLR;

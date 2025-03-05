@@ -45,7 +45,8 @@ if(functionNum == ACQUIRE_DISK) then
         multipush(R1,R2);
         call MOD_5 ;
         multipop(R1,R2);
-    endwhile;    
+    endwhile;   
+    [SYSTEM_STATUS_TABLE + 26] = [SYSTEM_STATUS_TABLE + 26] + 1;
     [DISK_STATUS_TABLE ] = 1 ;
     [DISK_STATUS_TABLE +4] = currentPID ;
     return;
