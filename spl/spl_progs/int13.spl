@@ -1,0 +1,64 @@
+alias userSP R0;
+alias syscall R1;
+userSP = SP ;
+
+syscall = [[PTBR + 2*((userSP -5)/512)] * 512 + (userSP-5)%512];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13] = SP ;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 +9] = syscall;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11]*512 - 1 ;
+
+if(syscall == INT_SEMGET) then
+    alias i R2 ;
+    i = 0;
+    while(i < 8) do
+        if([[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 +11]*512 + RESOURCE_TABLE_OFFSET + i*2] == -1) then
+            break;
+        endif;
+        i = i + 2;
+    endwhile;
+
+    if(i==8) then
+        [[PTBR + 2*((userSP-1)/512)] * 512 + (userSP-1)%512] = -1;
+    else
+        multipush(R0,R1,R2);
+        R1 = ACQUIRE_SEMAPHORE;
+        R2 = [SYSTEM_STATUS_TABLE +1];
+        call RESOURCE_MANAGER;
+        R5 = R0;
+        multipop(R0,R1,R2);
+
+        if(R3 == -1) then
+            [[PTBR + 2*((userSP-1)/512)] * 512 + (userSP-1)%512] = -2;
+        else
+            [[PROCESS_TABLE +[SYSTEM_STATUS_TABLE +1]*16 + 11]*512 + RESOURCE_TABLE_OFFSET+i*2] = 1;
+            [[PROCESS_TABLE +[SYSTEM_STATUS_TABLE +1]*16 + 11]*512 + RESOURCE_TABLE_OFFSET+i*2 + 1] = R5;
+            [[PTBR + 2*((userSP - 1)/512)]*512 + ((userSP - 1)%512)] = i; 
+        endif;
+     endif;
+     breakpoint;
+endif;
+
+if(syscall == INT_SEMRELEASE) then
+    alias sem R2 ;
+    sem = [[PTBR + 2*((userSP-4)/512)] * 512 + (userSP-4)%512];
+
+    if(sem<0 || sem>7 || [[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16 +11]*512 + RESOURCE_TABLE_OFFSET+ sem*2] != 1) then
+        [[PTBR + 2 * ((userSP - 1) / 512)] * 512 + ((userSP - 1) % 512)] = -1;
+    else
+        multipush(R0,R1,R2);
+        R1 = RELEASE_SEMAPHORE;
+        R2 = [[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16 + 11]*512 + RESOURCE_TABLE_OFFSET+ 2*sem +1];
+        R3 = [SYSTEM_STATUS_TABLE +1];
+        call RESOURCE_MANAGER;
+        R5 = R0;
+        multipop(R0,R1,R2);
+        
+        [[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 +11]*512 + RESOURCE_TABLE_OFFSET + 2*sem] = -1 ;
+        [[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 +11]*512 + RESOURCE_TABLE_OFFSET + 2*sem + 1] = -1 ;
+    endif;
+    breakpoint;
+endif;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 9] = 0;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13];
+ireturn;

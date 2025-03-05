@@ -51,5 +51,46 @@ if(functionNum == ACQUIRE_DISK) then
     return;
 endif;
 
+if(functionNum == ACQUIRE_SEMAPHORE) then
+  alias i R3;
+    i = 0;
+    while(i < MAX_SEM_COUNT && [SEMAPHORE_TABLE + 4 * i + 1] != 0) do
+        i = i + 1;
+    endwhile;
+
+    if (i == MAX_SEM_COUNT) then
+        R0 = -1;
+    else
+        [SEMAPHORE_TABLE + 4 * i] = -1;
+        [SEMAPHORE_TABLE + 4 * i + 1] = 1;
+        R0 = i;
+    endif;
+    breakpoint;
+    return; 
+endif;
+
+if(functionNum == RELEASE_SEMAPHORE) then
+   alias semid R2;
+    alias currentPID R3;
+
+    if (currentPID == [SEMAPHORE_TABLE + semid * 4]) then
+        [SEMAPHORE_TABLE + semid * 4] = -1;
+        alias i R4;
+
+        i = 0;
+        while (i < 16) do
+            if ([PROCESS_TABLE + i * 16 + 4] == WAIT_SEMAPHORE && [PROCESS_TABLE + i * 16 + 5] == semid) then
+                [PROCESS_TABLE + i * 16 + 4] = READY;
+                [PROCESS_TABLE + i * 16 + 5] = -1;
+            endif;
+            i = i + 1;
+        endwhile;
+
+        [SEMAPHORE_TABLE + 4*semid + 1] = [SEMAPHORE_TABLE + 4*semid + 1] - 1;
+    endif;
+    R0 = 0;
+    breakpoint;
+    return;
+endif;    
 
 

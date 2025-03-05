@@ -68,6 +68,12 @@ loadi(25,38);
 loadi(32,45); //Loading INT 15/ Shutdown syscall
 loadi(33,46);
 
+loadi(28,41); //Loading INT 13/Semget, Semrelease
+loadi(29,42);
+
+loadi(30,43); //Loadin INT 14/ Semlock, Semunlock
+loadi(31,44);
+
 alias i R0;
 i=0;
 
@@ -99,6 +105,12 @@ while(i < 16)do
     i = i +2 ;
 endwhile;
 
+i=0;
+while(i < MAX_SEM_COUNT) do
+    [SEMAPHORE_TABLE + i*4] = -1 ;
+    [SEMAPHORE_TABLE + i*4 +1] = 0 ;
+    i = i + 1;
+endwhile;    
 
 //Set up Disk Map table
 alias diskMapTable R2;

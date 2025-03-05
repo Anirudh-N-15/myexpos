@@ -54,16 +54,16 @@ else
     endif;
 
     if((EPN < 8) && (EPN >= 4)) then
-        print "code";
+        //print "code";
         R1 = GET_CODE_PAGE;
         R2 = [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE +1]*10 + EPN];
-        print R2 ;
+        //print R2 ;
         call MOD_2;
 
         [PTBR + 2 * EPN] = R0 ;
         [PTBR + 2 * EPN +1] = "1100" ;
         
-        multipop(R0,R1,R2);
+        //multipop(R0,R1,R2);
     endif;
 endif;
     
