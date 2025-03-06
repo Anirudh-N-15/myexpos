@@ -93,4 +93,47 @@ if(functionNum == RELEASE_SEMAPHORE) then
     return;
 endif;    
 
+if(functionNum == ACQUIRE_INODE) then
+    alias inode R2;
+    alias currPID R3;
+
+    while([FILE_STATUS_TABLE + inode*4] != -1) do
+        [PROCESS_TABLE + currPID*16 + 4] = WAIT_FILE;
+        [PROCESS_TABLE + currPID*16 + 5] = inode;
+        multipush(R1,R2,R3);
+        call SCHEDULER;
+        multipush(R1,R2,R3);
+    endwhile;
+
+    if([INODE_TABLE + inode*16 + 1] == -1) then
+        R0 = -1;
+    else
+        [FILE_STATUS_TABLE + inode*4] = currPID; 
+        R0 = 0;
+    endif;
+    return;
+endif;    
+
+if(functionNum == RELEASE_INODE) then
+    alias inode R2;
+    alias currPID R3;
+
+    if([FILE_STATUS_TABLE + inode*4] != currPID) then
+        R0 = -1;
+        return;
+    else
+        ([FILE_STATUS_TABLE + inode*4] = -1 ;
+        alias i R4;
+        i=0;
+        while(i < 16) do
+            if([PROCESS_TABLE + i*16 + 4] == WAIT_FILE && [PROCESS_TABLE + i*16 + 5] == inode) then
+                [PROCESS_TABLE + i*16 + 5] = READY;
+                endif;
+            i = i +1;
+        endwhile;
+        R0 = 0;
+    endif;
+    return;
+endif;    
+
 

@@ -59,26 +59,43 @@ loadi(60,4);
 loadi(6,19); //Loading Disk INT routine
 loadi(7,20);
 
-loadi(18,31); //Loading Fork syscall/ Interrupt 8 routine
+loadi(18,31); // Fork syscall/ Interrupt 8 routine
 loadi(19,32);
 
-loadi(24,37); //Loading INT 11/ Signal,Wait,getpid,getppid
+loadi(24,37); // INT 11/ Signal,Wait,getpid,getppid
 loadi(25,38);
 
-loadi(32,45); //Loading INT 15/ Shutdown syscall
+loadi(32,45); // INT 15/ Shutdown syscall
 loadi(33,46);
 
-loadi(28,41); //Loading INT 13/Semget, Semrelease
+loadi(28,41); // INT 13/Semget, Semrelease
 loadi(29,42);
 
-loadi(30,43); //Loadin INT 14/ Semlock, Semunlock
+loadi(30,43); // INT 14/ Semlock, Semunlock
 loadi(31,44);
+
+loadi(10,23); // INT 4/ Create File
+loadi(11,24);
+
+loadi(62,5); // Copy of Root file
 
 alias i R0;
 i=0;
+while(i < MAX_FILE_NUM) do
+    [FILE_STATUS_TABLE + i*4] = -1;
+    [FILE_STATUS_TABLE + i*4 +1] = -1;
+    i = i + 1;
+endwhile;
 
-[SYSTEM_STATUS_TABLE + 2] = 0 ; 
+i=0;
+while(i < 4) do
+    [BUFFER_TABLE + i*4] = -1;
+    [BUFFER_TABLE + i*4 + 1] = 0;
+    [BUFFER_TABLE + i*4 + 2] = -1;
+    i =i + 1;
+endwhile;    
 
+i=0;
 while(i < 128) do
     if(i < 83) then
         [MEMORY_FREE_LIST + i] = 1 ;
@@ -89,6 +106,7 @@ while(i < 128) do
   i = i + 1;
 endwhile;  
 
+[SYSTEM_STATUS_TABLE + 2] = 0 ; 
 [SYSTEM_STATUS_TABLE + 3] = 0 ;
 [TERMINAL_STATUS_TABLE +1] = 0; //Indicates that the terminal is free before scheduling the first process
 [DISK_STATUS_TABLE] = 0 ; 
@@ -160,6 +178,7 @@ PTLR = 10 ;
 [PTBR+19] = "0110";
 
 [PROCESS_TABLE + 16 + 1] =1 ; //PID is 1 for init process
+[PROCESS_TABLE + 16 + 3] = 1; // USERID of root is 1 
 [PROCESS_TABLE + 16 + 4] = CREATED ; //As the first scheduled process is Idle code
 [PROCESS_TABLE + 16 + 13] = 8*512 ; //Same because the Stack is residing in logical page 8 of virtual mem
 [PROCESS_TABLE + 16 + 12] = 0 ; //KPTR value is set to 0 as always
