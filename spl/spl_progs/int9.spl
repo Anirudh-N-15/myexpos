@@ -143,4 +143,3 @@ SP = 8 * 512 ;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE]* 16 + 9] = 0 ;
 
 ireturn ;
-
