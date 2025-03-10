@@ -42,9 +42,9 @@ endif;
 if(functionNum == ACQUIRE_DISK) then
     while( [DISK_STATUS_TABLE ] == 1 ) do
         [PROCESS_TABLE + currentPID*16 + 4] = WAIT_DISK ;
-        multipush(R1,R2);
+        multipush(R1,R2,R3,R4);
         call MOD_5 ;
-        multipop(R1,R2);
+        multipop(R1,R2,R3,R4);
     endwhile;    
     [DISK_STATUS_TABLE ] = 1 ;
     [DISK_STATUS_TABLE +4] = currentPID ;
@@ -122,7 +122,7 @@ if(functionNum == RELEASE_INODE) then
         R0 = -1;
         return;
     else
-        ([FILE_STATUS_TABLE + inode*4] = -1 ;
+        [FILE_STATUS_TABLE + inode*4] = -1 ;
         alias i R4;
         i=0;
         while(i < 16) do

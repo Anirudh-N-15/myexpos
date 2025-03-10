@@ -11,6 +11,8 @@ cd /home/expos/myexpos/expl
 ./expl ./expl_progs/readw.expl
 ./expl ./expl_progs/parent.expl
 ./expl ./expl_progs/child.expl
+./expl ./expl_progs/crfile.expl
+./expl ./expl_progs/delfile.expl
 
 
 cd /home/expos/myexpos/spl
@@ -52,6 +54,10 @@ echo "INT 13"
 ./spl ./spl_progs/int13.spl
 echo "INT 14"
 ./spl ./spl_progs/int14.spl
+echo "INT 15"
+./spl ./spl_progs/int15.spl
+echo "INT 4"
+./spl ./spl_progs/int4.spl
 
 cd /home/expos/myexpos/xfs-interface
 ./xfs-interface <<EOF
@@ -84,8 +90,11 @@ load --exec ../expl/expl_progs/fork3.xsm
 load --exec ../expl/expl_progs/readw.xsm
 load --int=13 ../spl/spl_progs/int13.xsm
 load --int=14 ../spl/spl_progs/int14.xsm
+load --int=4 ../spl/spl_progs/int4.xsm
 load --exec ../expl/expl_progs/parent.xsm
 load --exec ../expl/expl_progs/child.xsm
+load --exec ../expl/expl_progs/crfile.xsm
+load --exec ../expl/expl_progs/delfile.xsm
 load --module 2 ../spl/spl_progs/newmod2.xsm
 exit
 EOF

@@ -20,7 +20,7 @@ if(functionNum == DISK_STORE) then
 
     multipush(R1,R2,R3,R4);
     call SCHEDULER;
-    multipop(R1,R2,R3,R3);
+    multipop(R1,R2,R3,R4);
     return;
 endif;
 

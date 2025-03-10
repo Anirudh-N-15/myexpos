@@ -1,7 +1,156 @@
 alias userSP R0;
 alias syscall R1;
+alias file R2;
+alias retAddress R3;
 
 userSP = SP;
 
+syscall = [[PTBR + 2*((userSP-5)/512) ]*512 + (userSP-5)%512 ] ;
+file = [[PTBR + 2*((userSP -4)/512)]*512 + (userSP - 4)%512 ] ;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13] = SP ;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11]*512 - 1 ;
 
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 9] = syscall ;
+
+retAddress = [PTBR + 2*((userSP-1)/512)]*512 + (userSP -1)%512 ;
+
+alias i R4;
+alias flag R5;
+i=0;
+flag=0;
+
+while(i < MAX_FILE_NUM) do
+    if([INODE_TABLE + i*16 + 1] == file) then
+        flag = 1;
+        break;
+    endif;
+    i = i + 1;
+endwhile;
+
+if(syscall == INT_CREATE) then
+    if(flag == 1) then
+        SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13];
+        [retAddress] = 0;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 9] = 0 ;
+        ireturn;
+    endif;
+    
+    alias permission R6;
+    permission = [[PTBR + 2*((userSP -3)/512)]*512 + (userSP -3)%512 ] ;
+    
+    i=0;
+    while(i < MAX_FILE_NUM) do
+        if([INODE_TABLE + i*16 + 1] == -1) then
+            break;
+        endif;
+        i = i +1;
+    endwhile;
+
+    if(i == MAX_FILE_NUM) then
+        [retAddress] = -1 ;
+    else
+        alias inode R7;
+        inode = INODE_TABLE + i*16 ;
+        [inode + 0] = DATA ; //DATA = 2(interchangeable usage)
+        [inode + 1] = file;
+        [inode + 2] = 0 ;
+        [inode + 3] = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 3];
+        [inode + 4] = permission ; 
+
+        [ROOT_FILE + i*8 + 0] = file;
+        [ROOT_FILE + i*8 + 1] = 0;
+        [ROOT_FILE + i*8 + 2] = DATA;
+        [ROOT_FILE + i*8 + 3] = [USER_TABLE + [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 3]*2 ];
+        [ROOT_FILE + i*8 + 4] = permission;
+
+        [PROCESS_TABLE + i*16 + 9] = 0;
+        [retAddress] = 0;
+    endif;
+endif;
+
+if(syscall == INT_DELETE) then
+    if(flag == 0) then
+        [retAddress] = 0;
+        SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13];
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 9] = 0;
+        ireturn;
+     endif;
+
+    alias inode R6 ;
+    inode = INODE_TABLE + i*16;
+
+    if([inode + 0] != DATA) then
+        [retAddress] = -1;
+    else
+        if([inode + 4] == 0 && [SYSTEM_STATUS_TABLE +0]!=1 && [inode +3] != [PROCESS_TABLE + i*16 + 3]) then
+            [retAddress] = -1;
+        else
+            multipush(R0,R1,R2,R3,R4,R5,R6);
+                R1 = ACQUIRE_INODE;
+                R2 = i; 
+                R3 = [SYSTEM_STATUS_TABLE +1];
+                call RESOURCE_MANAGER;
+            multipop(R0,R1,R2,R3,R4,R5,R6);
+
+            if([FILE_STATUS_TABLE + i*4 + 1] != -1) then
+                multipush(R0,R1,R2,R3,R4,R5,R6);
+                    R1 = RELEASE_INODE;
+                    R2 = i ;
+                    R3 = [SYSTEM_STATUS_TABLE + 1];
+                    call RESOURCE_MANAGER;
+                multipop(R0,R1,R2,R3,R4,R5,R6);
+                [retAddress] = -1;
+            else
+                alias blocknum R7;
+                blocknum = inode + 8;
+                alias n R8 ;
+                n = blocknum + 4;
+                while(blocknum <= n) do
+                    if([blocknum] == -1) then
+                        break;
+                    endif;
+                    alias bufferIndex R9;
+                    bufferIndex = [blocknum] % MAX_BUFFER;
+                    if ([BUFFER_TABLE +bufferIndex*4 + 0]==[blocknum]&&[BUFFER_TABLE +bufferIndex*4 +1]==1) then
+                        [BUFFER_TABLE + bufferIndex * 4 + 1] = 0;
+                    endif;
+                    
+                    multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+                        R1 = RELEASE_BLOCK ;
+                        R3 = [blocknum];
+                        call MEMORY_MANAGER ;
+                    multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+                    blocknum = blocknum + 1 ;
+                endwhile;
+                
+                alias inodePage R9;
+                inodePage = inode;
+                n = inodePage + 16 ;
+                while(inodePage < n) do
+                    [inodePage] = -1;
+                    inodePage = inodePage + 1;
+                endwhile;
+
+                alias rootFile R9;
+                rootFile = ROOT_FILE + 8*i ;
+                n = rootFile + 8 ;
+                while(rootFile < n) do
+                    [rootFile] = -1;
+                    rootFile = rootFile + 1;
+                endwhile;
+
+                multipush(R3);
+                    R1 = RELEASE_INODE;
+                    R2 = i;
+                    R3 = [SYSTEM_STATUS_TABLE +1];
+                    call RESOURCE_MANAGER;
+                multipop(R3);
+                [retAddress] = 0;
+            endif;
+        endif;
+    endif;
+endif;
+
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13];
+ireturn;
