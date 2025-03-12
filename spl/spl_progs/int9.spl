@@ -18,7 +18,7 @@ alias inode R4;
 i =0;
 
 while(i < MAX_FILE_NUM) do
-    if( [INODE_TABLE + i*16 +1] == arg1) then
+    if( [INODE_TABLE + i*16 +1] == arg1 && [INODE_TABLE + i*16 + 0] == EXEC) then
         inode = i ; //saving the inode index of the file 
         flag= 1;
         break;

@@ -115,25 +115,63 @@ if(functionNum == ACQUIRE_INODE) then
 endif;    
 
 if(functionNum == RELEASE_INODE) then
-    alias inode R2;
-    alias currPID R3;
+  alias inodeNumber R2;
+    alias currentPID R3;
 
-    if([FILE_STATUS_TABLE + inode*4] != currPID) then
-        R0 = -1;
-        return;
-    else
-        [FILE_STATUS_TABLE + inode*4] = -1 ;
+    if ([FILE_STATUS_TABLE + inodeNumber * 4 + 0] == currentPID) then
+        [FILE_STATUS_TABLE + inodeNumber * 4 + 0] = -1;
         alias i R4;
-        i=0;
-        while(i < 16) do
-            if([PROCESS_TABLE + i*16 + 4] == WAIT_FILE && [PROCESS_TABLE + i*16 + 5] == inode) then
-                [PROCESS_TABLE + i*16 + 5] = READY;
-                endif;
-            i = i +1;
+        i = 0;
+        while (i < MAX_PROC_NUM) do
+            if ([PROCESS_TABLE + i*16 +4] == WAIT_FILE && [PROCESS_TABLE + i*16 +5] == inodeNumber) then
+                [PROCESS_TABLE + i*16 + 4] = READY;
+            endif;
+            i = i + 1;
         endwhile;
         R0 = 0;
+    else
+        R0 = -1;
     endif;
-    return;
+    return; 
 endif;    
 
+if(functionNum == ACQUIRE_BUFFER) then
+    alias bufferNum R2;
+    alias currPID R3;
+    while([BUFFER_TABLE + bufferNum*4 + 2] != -1 ) do
+        [PROCESS_TABLE + currPID*16 + 4] = WAIT_BUFFER ;
+        [PROCESS_TABLE + currPID*16 + 5] = bufferNum;
+
+        multipush(R0,R1,R2,R3);
+            call SCHEDULER;
+        multipop(R0,R1,R2,R3);
+    endwhile;
+
+    [BUFFER_TABLE + bufferNum*4 +2] = currPID;
+    return;
+endif;
+
+if(functionNum == RELEASE_BUFFER) then
+    alias bufferNum R2;
+    alias currPID R3;
+
+    if([BUFFER_TABLE + bufferNum*4 +2] != currPID) then
+        R0 = -1;
+        return;
+    endif;
+    
+    [BUFFER_TABLE + bufferNum*4 + 2] = -1;
+
+    alias i R4;
+    i=0;
+    while(i < 16) do
+        if([PROCESS_TABLE + i*16 + 4] == WAIT_BUFFER && [PROCESS_TABLE+ i*16 +5]==bufferNum) then
+            [PROCESS_TABLE + i*16 + 4] = READY ;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    R0 = 0;
+    return;
+endif;
 

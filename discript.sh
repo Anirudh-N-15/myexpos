@@ -13,7 +13,8 @@ cd /home/expos/myexpos/expl
 ./expl ./expl_progs/child.expl
 ./expl ./expl_progs/crfile.expl
 ./expl ./expl_progs/delfile.expl
-
+./expl ./expl_progs/reprint.expl
+./expl ./expl_progs/test5.expl
 
 cd /home/expos/myexpos/spl
 echo "------------Startup Code"
@@ -44,10 +45,12 @@ echo "Process Manager Module/ MOD_1"
 ./spl ./spl_progs/mod1.spl
 echo "Memory Manager Module/ MOD_2"
 ./spl ./spl_progs/newmod2.spl
+echo "File Manager module/ MOD_3"
+./spl ./spl_progs/mod3.spl
 echo "Disk Interrupt"
 ./spl ./spl_progs/disk.spl
 echo "INT 8"
-./spl ./spl_progs/newint8.spl
+./spl ./spl_progs/int8.spl
 echo "INT 11"
 ./spl ./spl_progs/int11.spl
 echo "INT 13"
@@ -58,6 +61,9 @@ echo "INT 15"
 ./spl ./spl_progs/int15.spl
 echo "INT 4"
 ./spl ./spl_progs/int4.spl
+echo "INT 5"
+./spl ./spl_progs/int5.spl
+
 
 cd /home/expos/myexpos/xfs-interface
 ./xfs-interface <<EOF
@@ -82,7 +88,7 @@ load --exhandler ../spl/spl_progs/exhandler.xsm
 load --int=disk ../spl/spl_progs/disk.xsm
 load --exec ../expl/expl_progs/odd.xsm
 load --exec ../expl/expl_progs/even.xsm
-load --int=8 ../spl/spl_progs/newint8.xsm
+load --int=8 ../spl/spl_progs/int8.xsm
 load --int=11 ../spl/spl_progs/int11.xsm
 load --int=15 ../spl/spl_progs/int15.xsm
 load --exec ../expl/expl_progs/pid.xsm
@@ -91,10 +97,15 @@ load --exec ../expl/expl_progs/readw.xsm
 load --int=13 ../spl/spl_progs/int13.xsm
 load --int=14 ../spl/spl_progs/int14.xsm
 load --int=4 ../spl/spl_progs/int4.xsm
+load --int=5 ../spl/spl_progs/int5.xsm
+load --module 3 ../spl/spl_progs/mod3.xsm
 load --exec ../expl/expl_progs/parent.xsm
 load --exec ../expl/expl_progs/child.xsm
 load --exec ../expl/expl_progs/crfile.xsm
 load --exec ../expl/expl_progs/delfile.xsm
+load --exec ../expl/expl_progs/reprint.xsm
+load --exec ../expl/expl_progs/test5.xsm
 load --module 2 ../spl/spl_progs/newmod2.xsm
+load --data ../expl/expl_progs/numbers.dat
 exit
 EOF

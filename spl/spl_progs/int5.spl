@@ -1,0 +1,83 @@
+alias userSP R0;
+alias syscall R1;
+alias fileName R2;
+alias retAddress R3;
+
+userSP = SP;
+
+syscall = [[PTBR + 2*((userSP-5)/512)]*512 + (userSP -5)%512] ;
+fileName =  [[PTBR + 2*((userSP-4)/512)]*512 + (userSP -4)%512] ;
+retAddress = [PTBR + 2*((userSP-1)/512)]*512 + (userSP -1)%512 ;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+ 1]*16 + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11]*512 - 1;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = syscall;
+
+if(syscall == INT_OPEN) then
+    
+    breakpoint;
+
+    alias uap R4;
+    uap = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11]*512 ;
+    alias RTentry R5;
+    RTentry = uap + RESOURCE_TABLE_OFFSET;
+    alias i R6;
+    i=0;
+    while([RTentry + i*2 + 0]!= -1 && i < 8) do
+        i = i +1;
+    endwhile;
+
+    if(i == 8) then
+
+        [retAddress] = -3 ;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 9] = 0;
+        SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 +13];
+        ireturn;
+    endif;
+
+    alias openFTentry R7;
+    multipush(R0,R1,R2,R3,R4,R5,R6);
+
+        R1 = OPEN;
+        R2 = fileName;
+        call FILE_MANAGER;
+        openFTentry = R0;
+    multipop(R0,R1,R2,R3,R4,R5,R6);
+   
+    if(openFTentry < 0) then
+        [retAddress] = openFTentry;
+    else
+        [RTentry + i*2 +0] = FILE ;
+        [RTentry + i*2 +1] = openFTentry ;
+        [retAddress] = i ; 
+    endif;
+endif;
+
+if(syscall == INT_CLOSE) then
+    if(fileName < 0 || fileName > 7) then
+        [retAddress] = -1;
+    else
+        alias RTentry R4;
+        RTentry = [PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16 +11]*512 +RESOURCE_TABLE_OFFSET+fileName*2 ;
+        if([RTentry] != FILE) then
+            [retAddress]= -1;
+        else
+            alias openFTentry R5;
+            openFTentry = [RTentry +1];
+
+            multipush(R0,R1,R2,R3,R4);
+                R1 = CLOSE;
+                R2 = openFTentry;
+                call FILE_MANAGER;
+            multipop(R0,R1,R2,R3,R4);
+
+            [RTentry ] = -1;
+            [retAddress] = 0;
+        endif;
+    endif;
+endif;    
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 9] = 0;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 +13];
+ireturn;
