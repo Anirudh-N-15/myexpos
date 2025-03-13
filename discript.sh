@@ -44,7 +44,7 @@ echo "INT 9"
 echo "Process Manager Module/ MOD_1"
 ./spl ./spl_progs/mod1.spl
 echo "Memory Manager Module/ MOD_2"
-./spl ./spl_progs/newmod2.spl
+./spl ./spl_progs/mod2.spl
 echo "File Manager module/ MOD_3"
 ./spl ./spl_progs/mod3.spl
 echo "Disk Interrupt"
@@ -105,7 +105,7 @@ load --exec ../expl/expl_progs/crfile.xsm
 load --exec ../expl/expl_progs/delfile.xsm
 load --exec ../expl/expl_progs/reprint.xsm
 load --exec ../expl/expl_progs/test5.xsm
-load --module 2 ../spl/spl_progs/newmod2.xsm
+load --module 2 ../spl/spl_progs/mod2.xsm
 load --data ../expl/expl_progs/numbers.dat
 exit
 EOF
