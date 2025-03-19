@@ -142,3 +142,49 @@ if(funcNum == FREE_PAGE_TABLE) then
     endwhile;
     return;  
 endif;
+
+if(funcNum == KILL_ALL) then
+    alias i R4;
+    i = 0;
+    while(i < MAX_FILE_NUM ) do 
+        if([INODE_TABLE + i*16 + 1] != -1) then
+            multipush(R1,R2,R3,R4);
+            R1 = ACQUIRE_INODE;
+            R2 = i;
+            R3 = currPID;
+            call RESOURCE_MANAGER;
+            multipop(R1,R2,R3,R4);
+        endif;
+        i = i +1;
+    endwhile;
+
+    i = 2 ;
+    while(i < MAX_PROC_NUM-1) do
+        if([PROCESS_TABLE + i*16 +1] != currPID && [PROCESS_TABLE+ i*16 + 4] != TERMINATED)then
+            multipush(R1,R2,R3,R4);
+                R1 = EXIT_PROCESS;
+                R2 = i;
+                call PROCESS_MANAGER;
+            multipop(R1,R2,R3,R4);
+        endif;
+        i = i +1;
+    endwhile;
+
+    i=0;
+    while(i < MAX_FILE_NUM) do
+        if([INODE_TABLE + i*16 + 1] == 1) then
+            multipush(R1,R2,R3,R4);
+                R1 = RELEASE_INODE;
+                R2 = i;
+                R3 = currPID;
+                call RESOURCE_MANAGER;
+            multipop(R1,R2,R3,R4);
+        endif;
+        i = i +1;
+    endwhile;
+    return;
+endif;
+        
+
+
+

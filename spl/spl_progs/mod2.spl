@@ -55,6 +55,22 @@ if (functionNumber == 2) then
     return;
 endif;
 
+//Get free block
+if(functionNumber == 3) then
+    alias i R2 ;
+    i = 69;
+    while(i < 256) do 
+        if([DISK_FREE_LIST + i] == 0) then
+            [DISK_FREE_LIST + i] = 1 ;
+            R0 = i;
+            return;
+        endif;
+        i = i + 1;
+    endwhile;
+    R0 = -1 ;
+    return;
+endif;
+
 // Release Block 
 if (functionNumber == 4) then
     alias blockNumber R2;

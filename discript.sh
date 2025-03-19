@@ -15,6 +15,14 @@ cd /home/expos/myexpos/expl
 ./expl ./expl_progs/delfile.expl
 ./expl ./expl_progs/reprint.expl
 ./expl ./expl_progs/test5.expl
+./expl ./expl_progs/lsm.expl
+./expl ./expl_progs/rmm.expl
+./expl ./expl_progs/catm.expl
+./expl ./expl_progs/cpm.expl
+./expl ./expl_progs/s25as1.expl
+./expl ./expl_progs/s25as2.expl
+./expl ./expl_progs/test6.expl
+./expl ./expl_progs/mergef.expl
 
 cd /home/expos/myexpos/spl
 echo "------------Startup Code"
@@ -67,7 +75,7 @@ echo "INT 5"
 
 cd /home/expos/myexpos/xfs-interface
 ./xfs-interface <<EOF
-fdisk
+
 load --os ../spl/spl_progs/startup.xsm
 load --init ../expl/expl_progs/init.xsm
 load --idle ../expl/expl_progs/idle.xsm
@@ -107,5 +115,14 @@ load --exec ../expl/expl_progs/reprint.xsm
 load --exec ../expl/expl_progs/test5.xsm
 load --module 2 ../spl/spl_progs/mod2.xsm
 load --data ../expl/expl_progs/numbers.dat
+load --exec ../expl/expl_progs/s25as1.xsm
+load --exec ../expl/expl_progs/s25as2.xsm
+load --exec ../expl/expl_progs/test6.xsm
+load --exec ../expl/expl_progs/mergef.xsm
+
+load --exec ../expl/expl_progs/lsm.xsm
+load --exec ../expl/expl_progs/rmm.xsm
+load --exec ../expl/expl_progs/catm.xsm
+load --exec ../expl/expl_progs/cpm.expl
 exit
 EOF
