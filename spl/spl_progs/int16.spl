@@ -1,0 +1,163 @@
+alias userSP R0;
+userSP = SP;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13] = SP ;
+
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 11]*512 - 1;
+
+alias syscall R1;
+syscall = [[PTBR + 2*((userSP-5)/512)]*512 + (userSP-5)%512] ;
+
+alias username R2;
+username = [[PTBR + 2*((userSP-4)/512)]*512 + (userSP-4)%512] ;
+
+alias retAddress R3;
+retAddress = [PTBR + 2*((userSP-1)/512)]*512 + (userSP-1)%512 ;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = syscall ;
+
+if(syscall == INT_NEWUSR) then
+    if([SYSTEM_STATUS_TABLE]!= ROOT || [SYSTEM_STATUS_TABLE +1]!= 2) then
+        [retAddress] = -2;
+    else
+        alias passwd R4;
+        passwd = [[PTBR + 2*((userSP-3)/512)]*512 + (userSP-3)%512] ;
+
+        alias i R5;
+        i=0;
+        while(i < MAX_USER_NUM) do
+            if([USER_TABLE + i*2] == username || [USER_TABLE + i*2] == -1) then
+                break;
+            endif;
+            i = i +1;
+        endwhile;
+
+        if(i == MAX_USER_NUM) then
+            [retAddress] = -3;
+        else
+            if([USER_TABLE + i*2] == username) then
+                [retAddress] = -1;
+            else
+                alias encPasswd R6;
+                encPasswd = passwd;
+                encrypt encPasswd;
+                [USER_TABLE + i*2] = username;
+                [USER_TABLE + i*2 +1] = encPasswd;
+
+                [retAddress] = 0;
+            endif;
+        endif;
+    endif;
+endif;
+               
+if(syscall == INT_REMUSR) then
+    if([SYSTEM_STATUS_TABLE]!= ROOT || [SYSTEM_STATUS_TABLE +1]!= 2) then
+        [retAddress] = -2;
+    else
+        if(username == "root" || username == "kernel") then
+            [retAddress] = -2;
+        else
+            alias i R4;
+            i = 0;
+
+            while(i < MAX_USER_NUM) do
+                if([USER_TABLE + i*2] == username) then
+                    break;
+                endif;
+                i = i +1 ;
+            endwhile;
+
+            if(i == MAX_USER_NUM) then
+                [retAddress] = -1 ;
+            else
+                alias j R5;
+                j =0;
+                while( j < MAX_FILE_NUM) do
+                    if([ROOT_FILE + 8*j + 3] == username) then
+                        break;
+                    endif;
+                    j  = j +1;
+                endwhile;
+                
+                if(j != MAX_FILE_NUM) then
+                    [retAddress] = -3 ;
+                else
+                    [USER_TABLE + i*2 ] = -1;
+                    [USER_TABLE + i*2 +1] = -1;
+
+                    [retAddress] = 0;
+                endif;
+            endif;
+        endif;
+    endif;
+endif;
+
+if(syscall == INT_SETPWD) then
+    if([SYSTEM_STATUS_TABLE +1]!= 2) then
+        [retAddress] = -1;
+    else
+        alias i R4;
+        i = 0;
+        while(i < MAX_USER_NUM) do
+            if([USER_TABLE + i*2] == username) then
+                break;
+            endif;
+            i = i +1;
+        endwhile;
+
+        if(i == MAX_USER_NUM) then
+            [retAddress] = -2;
+        else
+            if(i != [SYSTEM_STATUS_TABLE] && [SYSTEM_STATUS_TABLE]!= ROOT) then
+                [retAddress] = -1;
+            else
+                alias passwd R5;
+                passwd = [[PTBR + 2*((userSP-3)/512)]*512 + (userSP -3)%512];
+                
+                alias encPasswd R6;
+                encPasswd = passwd;
+                encrypt encPasswd;
+                [USER_TABLE + i*2 + 1] = encPasswd ;
+
+                [retAddress] = 0;
+            endif;
+        endif;
+    endif;
+endif;
+            
+if(syscall == INT_GETUID) then
+    alias i R4;
+    i = 0;
+
+    while( i < MAX_USER_NUM) do
+        if([USER_TABLE + i*2] == username) then
+            break;
+        endif;
+        i = i+1;
+    endwhile;
+
+    if(i == MAX_USER_NUM) then
+        [retAddress] = -1;
+    else
+        [retAddress] = i;
+    endif;
+endif;
+        
+if(syscall == INT_GETUNAME) then
+    alias userID R2; //userID is passed as argument
+
+    if(userID < 0 || userID > 15) then
+        [retAddress] = -1;
+    else
+        if([USER_TABLE + userID*2] == -1) then
+            [retAddress] = -1;
+        else
+            [retAddress] = [USER_TABLE + userID*2] ;
+        endif;
+    endif;
+endif;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 9] = 0;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13]; 
+
+ireturn;

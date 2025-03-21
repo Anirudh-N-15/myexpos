@@ -23,7 +23,7 @@ PTLR = 10 ;
 [PTBR+3] = "0100" ;
 
 //Heap
-[PTBR+4] = -1;       //Although heap is not requried bcoz no user defined datatype is used
+[PTBR+4] = -1;       
 [PTBR+5] = "0000" ;
 [PTBR+6] = -1;
 [PTBR+7] = "0000" ;
@@ -31,28 +31,28 @@ PTLR = 10 ;
 //Code
 [PTBR+8] = 69;
 [PTBR+9] = "0100" ;
-[PTBR+10] = 70;
-[PTBR+11] = "0100" ;
+[PTBR+10] = -1;
+[PTBR+11] = "0000" ;
 [PTBR+12] = -1;
 [PTBR+13] = "0000" ;
 [PTBR+14] = -1;
 [PTBR+15] = "0000" ;
 
 //Stack
-[PTBR+16] = 81 ;
+[PTBR+16] = 70 ;
 [PTBR+17] = "0110" ;
 [PTBR+18] = -1 ;
 [PTBR+19] = "0000" ;
 
 [PROCESS_TABLE + 1] = 0 ;  //PID of Idle process is 0 always
-[PROCESS_TABLE +11] = 82 ; //User Area Page Number is set to 82 in PCB's 11th entry
+[PROCESS_TABLE +11] = 76 ; //User Area Page Number is set to 82 in PCB's 11th entry
 [PROCESS_TABLE + 4] = RUNNING; //Setting the status of idle process as Created
 [PROCESS_TABLE + 13] = 8*512 ; //Stack is residing in logical page 8
 [PROCESS_TABLE + 12] = 0 ; //KPTR for Idle process is 0
 [PROCESS_TABLE + 14] = PTBR ;
 [PROCESS_TABLE + 15] = 10 ;
 
-[81 * 512 ] = [69*512 +1] ; //Transferring the entry point  of idle process to top of user stack of idle process;
+[70 * 512 ] = [69*512 +1] ; //Transferring the entry point  of idle process to top of user stack of idle process;
 
 [SYSTEM_STATUS_TABLE +1] = 0;
 SP = 8 * 512 ;

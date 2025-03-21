@@ -7,7 +7,6 @@ loadi (4,17); //Loading Timer Interrupt
 loadi (5,18);
 
 loadi (65,7); //Loading INIT Program
-loadi (66,8);
 
 loadi (22,35); //Interrupt10 : Exit syscall
 loadi (23,36);
@@ -23,10 +22,6 @@ loadi(17,30);
 
 loadi(54,67); //Loading the boot module i.e (module 7)
 loadi(55,68);
-
-loadi(85,69); //Loading 1st user program, exe.xsm(print even). Code=page 85; heap= 83,84; stack= 86,87; UAP = 88
-
-loadi(91,70); //Loading 2nd user program, prime.xsm. Code=page 91;heap =89,90; stack = 92,93, UAP = 94
 
 loadi(50,63); //Loading Module 5, Scheduler/Context switch module
 loadi(51,64);
@@ -84,19 +79,36 @@ loadi(13,26);
 loadi(46,59); //Module 3/ File Manager
 loadi(47,60);
 
+loadi(67,9); //Shell code
+loadi(68,10);
+
+loadi(26,39); // INT 12 / Logout syscall
+loadi(27,40);
+
+loadi(36,49); // INT 17 / Login syscall
+loadi(37,50);
+
+loadi(34,47); //INT 16 / newusr,remusr,setpwd,getuname,getuid
+loadi(35,48);
+
+
 alias i R0;
+alias fileStatusTable R9;
+fileStatusTable = FILE_STATUS_TABLE ;
 i=0;
 while(i < MAX_FILE_NUM) do
-    [FILE_STATUS_TABLE + i*4] = -1;
-    [FILE_STATUS_TABLE + i*4 +1] = -1;
+    [fileStatusTable + i*4] = -1;
+    [fileStatusTable + i*4 +1] = -1;
     i = i + 1;
 endwhile;
 
 i=0;
+alias bufferTable R10;
+bufferTable = BUFFER_TABLE;
 while(i < MAX_BUFFER) do
-    [BUFFER_TABLE + i*4 + 0] = -1;
-    [BUFFER_TABLE + i*4 + 1] = 0;
-    [BUFFER_TABLE + i*4 + 2] = -1;
+    [bufferTable + i*4 + 0] = -1;
+    [bufferTable + i*4 + 1] = 0;
+    [bufferTable + i*4 + 2] = -1;
     i =i + 1;
 endwhile;  
 
@@ -120,12 +132,9 @@ while(i < 128) do
   i = i + 1;
 endwhile;  
  
-[SYSTEM_STATUS_TABLE + 3] = 0 ;
 [TERMINAL_STATUS_TABLE +1] = 0; //Indicates that the terminal is free before scheduling the first process
-[DISK_STATUS_TABLE] = 0 ; 
 
 //Initializing the per-process Resource table of init
-
 i=0;
 alias init_perprocess R1 ;
 
@@ -137,27 +146,13 @@ while(i < 16)do
 endwhile;
 
 i=0;
+alias semTable R8;
+semTable = SEMAPHORE_TABLE ;
 while(i < MAX_SEM_COUNT) do
-    [SEMAPHORE_TABLE + i*4] = -1 ;
-    [SEMAPHORE_TABLE + i*4 +1] = 0 ;
+    [semTable + i*4] = -1 ;
+    [semTable + i*4 +1] = 0 ;
     i = i + 1;
 endwhile;    
-
-//Set up Disk Map table
-alias diskMapTable R2;
-diskMapTable = DISK_MAP_TABLE + 10 ;
-
-[diskMapTable + 0] = -1;            // Unused
-[diskMapTable + 1] = -1;            // Unused
-[diskMapTable + 2] = -1;            // Heap 1
-[diskMapTable + 3] = -1;            // Heap 2
-[diskMapTable + 4] =  7;            // Code 1
-[diskMapTable + 5] =  8;            // Code 2
-[diskMapTable + 6] = -1;            // Code 3
-[diskMapTable + 7] = -1;            // Code 4
-[diskMapTable + 8] = -1;            // Stack 1
-[diskMapTable + 9] = -1;            // Stack 2
-
 
 PTBR = PAGE_TABLE_BASE + 20; //For init process. As idle occupies PTBR
 PTLR = 10 ;
@@ -169,52 +164,111 @@ PTLR = 10 ;
 [PTBR+3] = "0100";
 
 //Heap
-[PTBR+4] = 78;
-[PTBR+5] = "0110";
-[PTBR+6] = 79;
-[PTBR+7] = "0110";
+[PTBR+4] = -1;
+[PTBR+5] = "0000";
+[PTBR+6] = -1;
+[PTBR+7] = "0000";
 
 //Code
 [PTBR+8] = 65;
 [PTBR+9] = "0100";
-[PTBR+10] = 66;
-[PTBR+11] = "0100";
+[PTBR+10] = -1;
+[PTBR+11] = "0000";
 [PTBR+12] = -1;
 [PTBR+13] = "0000";
 [PTBR+14] = -1;
 [PTBR+15] = "0000";
 
 //Stack
-[PTBR+16] = 76;
+[PTBR+16] = 66;
 [PTBR+17] = "0110";
-[PTBR+18] = 77;
-[PTBR+19] = "0110";
+[PTBR+18] = -1;
+[PTBR+19] = "0000";
 
-[PROCESS_TABLE + 16 + 1] =1 ; //PID is 1 for init process
-[PROCESS_TABLE + 16 + 3] = 1; // USERID of root is 1 
-[PROCESS_TABLE + 16 + 4] = CREATED ; //As the first scheduled process is Idle code
-[PROCESS_TABLE + 16 + 13] = 8*512 ; //Same because the Stack is residing in logical page 8 of virtual mem
-[PROCESS_TABLE + 16 + 12] = 0 ; //KPTR value is set to 0 as always
-[PROCESS_TABLE + 16 + 14] = PTBR ; //The current value of PTBR is set to PTBR + 20
-[PROCESS_TABLE + 16 + 15] = 10 ; //As always 10(ABI convention)
-[PROCESS_TABLE + 16 + 11] = 80 ; //Setting the user area page as 80
-[76 * 512] = [65 * 512 + 1] ;
+alias processTable R3;
+processTable = PROCESS_TABLE + 16 ;
 
+[processTable+ 1] =1 ; //PID is 1 for init process
+[processTable+ 3] = 0; // USERID of root is 1 
+[processTable + 4] = CREATED ; //As the first scheduled process is Idle code
+[processTable+ 13] = 8*512 ; //Same because the Stack is residing in logical page 8 of virtual mem
+[processTable+ 12] = 0 ; //KPTR value is set to 0 as always
+[processTable+ 14] = PTBR ; //The current value of PTBR is set to PTBR + 20
+[processTable+ 15] = 10 ; //As always 10(ABI convention)
+[processTable + 11] = 77 ; //Setting the user area page as 77
+[66 * 512] = [65 * 512 + 1] ;
 
-[PROCESS_TABLE + 2*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 3*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 4*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 5*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 6*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 7*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 8*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 9*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 10*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 11*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 12*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 13*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 14*16 + 4] = TERMINATED ;
-[PROCESS_TABLE + 15*16 + 4] = TERMINATED ;
+//Initialization for shell process 
+
+PTBR = PAGE_TABLE_BASE + 40 ;
+
+[PTBR + 0] = 63;
+[PTBR + 1] = "0100";
+[PTBR + 2] = 64;
+[PTBR + 3] = "0100";
+
+[PTBR + 4] = -1;
+[PTBR + 5] = "0000";
+[PTBR + 6] = -1;
+[PTBR + 7] = "0000";
+
+[PTBR + 8] = 67;
+[PTBR + 9] = "0100";
+[PTBR + 10] = 68;
+[PTBR + 11] = "0100";
+[PTBR + 12] = -1;
+[PTBR + 13] = "0000";
+[PTBR + 14] = -1;
+[PTBR + 15] = "0000";
+
+[PTBR + 16] = 78;
+[PTBR + 17] = "0110";
+[PTBR + 18] = 79;
+[PTBR + 19] = "0110";
+
+[78 * 512] = [67 * 512 + 1]  ;
+
+processTable  = PROCESS_TABLE + 32 ;
+
+[processTable + 1] = 2 ; //PID is 2 for shell process
+[processTable + 2] = 1 ; //PPID as 1
+[processTable + 3] = 1; // USERID of root is 1 
+[processTable + 4] = TERMINATED ; //As the first scheduled process is Idle code
+[processTable + 13] = 8*512 ; //Same because the Stack is residing in logical page 8 of virtual mem
+[processTable + 12] = 0 ; //KPTR value is set to 0 as always
+[processTable + 14] = PTBR ; //The current value of PTBR is set to PTBR + 40
+[processTable + 15] = 10 ; //As always 10(ABI convention)
+[processTable + 11] = 80 ; //Setting the user area page as 80
+
+alias diskMapTable R5;
+diskMapTable = DISK_MAP_TABLE + 20 ;
+[diskMapTable + 0] = -1;            // Unused
+[diskMapTable + 1] = -1;            // Unused
+[diskMapTable + 2] = -1;            // Heap 1
+[diskMapTable + 3] = -1;            // Heap 2
+[diskMapTable + 4] =  9;            // Code 1
+[diskMapTable + 5] =  10;            // Code 2
+[diskMapTable + 6] = -1;            // Code 3
+[diskMapTable + 7] = -1;            // Code 4
+[diskMapTable + 8] = -1;            // Stack 1
+[diskMapTable + 9] = -1;            // Stack 2
+
+[MEMORY_FREE_LIST + 78] = 1;
+[MEMORY_FREE_LIST + 79] = 1;
+[MEMORY_FREE_LIST + 80] = 1;
+
+i = 3;
+alias ProcessTable R6;
+processTable = PROCESS_TABLE ;
+while (i < 16) do
+    [ProcessTable + 16 * i + 4] = TERMINATED;
+    i = i + 1;
+endwhile;
+
+[TERMINAL_STATUS_TABLE] = 0;
+[DISK_STATUS_TABLE] = 0;
+[SYSTEM_STATUS_TABLE + 2] = 47;
+[SYSTEM_STATUS_TABLE + 3] = 0;
 
 return;
 

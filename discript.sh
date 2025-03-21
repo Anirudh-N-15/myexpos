@@ -23,10 +23,14 @@ cd /home/expos/myexpos/expl
 ./expl ./expl_progs/s25as2.expl
 ./expl ./expl_progs/test6.expl
 ./expl ./expl_progs/mergef.expl
+./expl ./expl_progs/ru.expl
+./expl ./expl_progs/lu.expl
+./expl ./expl_progs/login.expl
+./expl ./expl_progs/shell.expl
 
 cd /home/expos/myexpos/spl
 echo "------------Startup Code"
-./spl ./spl_progs/startup.spl
+./spl ./spl_progs/newstart.spl
 echo "INT 7"
 ./spl ./spl_progs/int7.spl
 echo "Timer Interrupt"
@@ -34,7 +38,7 @@ echo "Timer Interrupt"
 echo "------------Compiling Exception Handler"
 ./spl ./spl_progs/exhandler.spl
 echo "Boot Module"
-./spl ./spl_progs/mod7boot.spl
+./spl ./spl_progs/newmod7.spl
 echo "INT 10"
 ./spl ./spl_progs/int10.spl
 echo "Scheduler Module"
@@ -71,17 +75,22 @@ echo "INT 4"
 ./spl ./spl_progs/int4.spl
 echo "INT 5"
 ./spl ./spl_progs/int5.spl
-
+echo "INT 16"
+./spl ./spl_progs/int16.spl
+echo "INT 12"
+./spl ./spl_progs/int12.spl
+echo "INT 17"
+./spl ./spl_progs/int17.spl
 
 cd /home/expos/myexpos/xfs-interface
 ./xfs-interface <<EOF
 
-load --os ../spl/spl_progs/startup.xsm
-load --init ../expl/expl_progs/init.xsm
+load --os ../spl/spl_progs/newstart.xsm
+load --init ../expl/expl_progs/login.xsm
 load --idle ../expl/expl_progs/idle.xsm
 load --int=7 ../spl/spl_progs/int7.xsm
 load --int=timer ../spl/spl_progs/timer.xsm
-load --module 7 ../spl/spl_progs/mod7boot.xsm
+load --module 7 ../spl/spl_progs/newmod7.xsm
 load --library ../expl/library.lib
 load --module 5 ../spl/spl_progs/mod5.xsm
 load --int=10 ../spl/spl_progs/int10.xsm
@@ -105,6 +114,9 @@ load --exec ../expl/expl_progs/readw.xsm
 load --int=13 ../spl/spl_progs/int13.xsm
 load --int=14 ../spl/spl_progs/int14.xsm
 load --int=4 ../spl/spl_progs/int4.xsm
+load --int=17 ../spl/spl_progs/int17.xsm
+load --int=16 ../spl/spl_progs/int16.xsm
+load --int=12 ../spl/spl_progs/int12.xsm
 load --int=5 ../spl/spl_progs/int5.xsm
 load --module 3 ../spl/spl_progs/mod3.xsm
 load --exec ../expl/expl_progs/parent.xsm
@@ -123,6 +135,9 @@ load --exec ../expl/expl_progs/mergef.xsm
 load --exec ../expl/expl_progs/lsm.xsm
 load --exec ../expl/expl_progs/rmm.xsm
 load --exec ../expl/expl_progs/catm.xsm
-load --exec ../expl/expl_progs/cpm.expl
+load --exec ../expl/expl_progs/cpm.xsm
+load --exec ../expl/expl_progs/lu.xsm
+load --exec ../expl/expl_progs/ru.xsm
+load --shell ../expl/expl_progs/shell.xsm
 exit
 EOF
