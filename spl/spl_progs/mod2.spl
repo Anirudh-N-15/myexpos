@@ -21,7 +21,10 @@ if (functionNumber == 1) then
     // since available pages for user processes are from 76 to 127
     memoryFreeIndex = 76;
 
-    while (([MEMORY_FREE_LIST + memoryFreeIndex] > 0) && (memoryFreeIndex < 128)) do
+    while (memoryFreeIndex < 128) do
+        if( [MEMORY_FREE_LIST + memoryFreeIndex] == 0) then
+            break;
+        endif;
         memoryFreeIndex = memoryFreeIndex + 1;
     endwhile;
 
@@ -44,10 +47,10 @@ if (functionNumber == 2) then
     endif;
 
     alias i R3;
-    i = 1;
+    i = 0;
 
     while (i < 16) do
-        if ([PROCESS_TABLE + i*16 + 1]!= -1  && [PROCESS_TABLE + 16 * i + 4] == WAIT_MEM) then
+        if ([PROCESS_TABLE + 16 * i + 4] == WAIT_MEM) then
             [PROCESS_TABLE + 16 * i + 4] = READY;
         endif;
         i = i + 1;
@@ -58,8 +61,8 @@ endif;
 //Get free block
 if(functionNumber == 3) then
     alias i R2 ;
-    i = 69;
-    while(i < 256) do 
+    i = DISK_FREE_AREA;
+    while(i < DISK_SWAP_AREA) do 
         if([DISK_FREE_LIST + i] == 0) then
             [DISK_FREE_LIST + i] = 1 ;
             R0 = i;
@@ -76,7 +79,7 @@ if (functionNumber == 4) then
     alias blockNumber R2;
     alias currentPID R3;
 
-    [DISK_FREE_LIST + blockNumber] = [DISK_FREE_LIST + blockNumber] - 1;
+    [DISK_FREE_LIST + blockNumber] = [DISK_FREE_LIST + blockNumber] -1;
     return;
 endif;
 
@@ -88,7 +91,7 @@ if (functionNumber == 5) then
     alias pageNumber R5;
 
     i = 0;
-    while (i < 15) do
+    while (i < 16) do
         j = 4;
         while (j < 8) do
             if ([DISK_MAP_TABLE + 10 * i + j] == blockNumber) then
@@ -104,27 +107,40 @@ if (functionNumber == 5) then
         i = i + 1;
     endwhile;
 
-    multipush(R1, R2);
-    
-    R1 = 1;
-    call MOD_2;
+    multipush(R1, R2, R3, R4);
+        R1 = GET_FREE_PAGE;
+        call MEMORY_MANAGER;
+        pageNumber = R0;
+    multipop(R1, R2, R3, R4);
 
-    pageNumber = R0;
-
-    multipop(R1, R2);
-
-    multipush(R1, R2, R5);
-
+    multipush(R0, R1, R2, R3, R4, R5);
     R1 = 2;
     R4 = blockNumber;
-    R2 = [SYSTEM_STATUS_TABLE + 1];
     R3 = pageNumber;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
     call MOD_4;
-
-    multipop(R1, R2, R5);
+    multipop(R0, R1, R2, R3, R4, R5);
 
     R0 = pageNumber;
    //breakpoint;
     return;
 endif;
+
+//Get Swap Block
+if(functionNumber == 6) then
+    alias i R3;
+    i=DISK_SWAP_AREA; // i is set to value 256
+    while(i < DISK_SIZE) do
+        if([DISK_FREE_LIST + i] == 0) then
+            [DISK_FREE_LIST +i] = 1;
+            R0 = i;
+            return;
+        endif;
+        i = i +1;
+    endwhile;
+    
+    R0 = -1;
+    return;
+endif;
+
     

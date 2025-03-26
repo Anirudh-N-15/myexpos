@@ -27,10 +27,20 @@ cd /home/expos/myexpos/expl
 ./expl ./expl_progs/lu.expl
 ./expl ./expl_progs/login.expl
 ./expl ./expl_progs/shell.expl
+./expl ./expl_progs/fork4.expl
+./expl ./expl_progs/test8.expl
+./expl ./expl_progs/pgm1.expl
+./expl ./expl_progs/test9.expl
+./expl ./expl_progs/pgm2.expl
+./expl ./expl_progs/test11.expl
+./expl ./expl_progs/merge.expl
+./expl ./expl_progs/m_store.expl
+./expl ./expl_progs/m_sort.expl
+./expl ./expl_progs/m_merge.expl
 
 cd /home/expos/myexpos/spl
 echo "------------Startup Code"
-./spl ./spl_progs/newstart.spl
+./spl ./spl_progs/startup.spl
 echo "INT 7"
 ./spl ./spl_progs/int7.spl
 echo "Timer Interrupt"
@@ -38,14 +48,14 @@ echo "Timer Interrupt"
 echo "------------Compiling Exception Handler"
 ./spl ./spl_progs/exhandler.spl
 echo "Boot Module"
-./spl ./spl_progs/newmod7.spl
+./spl ./spl_progs/mod7.spl
 echo "INT 10"
 ./spl ./spl_progs/int10.spl
 echo "Scheduler Module"
 ./spl ./spl_progs/mod5.spl
-echo "Resource Manager"
+echo "Resource Manager / MOD_0"
 ./spl ./spl_progs/mod0.spl
-echo "Device Manager Module"
+echo "Device Manager Module / MOD_4"
 ./spl ./spl_progs/mod4.spl
 echo "INT 6"
 ./spl ./spl_progs/int6.spl
@@ -81,16 +91,19 @@ echo "INT 12"
 ./spl ./spl_progs/int12.spl
 echo "INT 17"
 ./spl ./spl_progs/int17.spl
+echo "MOD 6"
+./spl ./spl_progs/mod6.spl
+
 
 cd /home/expos/myexpos/xfs-interface
 ./xfs-interface <<EOF
-
-load --os ../spl/spl_progs/newstart.xsm
+fdisk
+load --os ../spl/spl_progs/startup.xsm
 load --init ../expl/expl_progs/login.xsm
 load --idle ../expl/expl_progs/idle.xsm
 load --int=7 ../spl/spl_progs/int7.xsm
 load --int=timer ../spl/spl_progs/timer.xsm
-load --module 7 ../spl/spl_progs/newmod7.xsm
+load --module 7 ../spl/spl_progs/mod7.xsm
 load --library ../expl/library.lib
 load --module 5 ../spl/spl_progs/mod5.xsm
 load --int=10 ../spl/spl_progs/int10.xsm
@@ -139,5 +152,17 @@ load --exec ../expl/expl_progs/cpm.xsm
 load --exec ../expl/expl_progs/lu.xsm
 load --exec ../expl/expl_progs/ru.xsm
 load --shell ../expl/expl_progs/shell.xsm
+load --module 6 ../spl/spl_progs/mod6.xsm
+load --exec ../expl/expl_progs/fork4.xsm
+load --exec ../expl/expl_progs/test8.xsm
+load --exec ../expl/expl_progs/test9.xsm
+load --exec ../expl/expl_progs/pgm1.xsm
+load --exec ../expl/expl_progs/test11.xsm
+load --exec ../expl/expl_progs/pgm2.xsm
+
+load --exec ../expl/expl_progs/merge.xsm
+load --exec ../expl/expl_progs/m_merge.xsm
+load --exec ../expl/expl_progs/m_store.xsm
+load --exec ../expl/expl_progs/m_sort.xsm
 exit
 EOF

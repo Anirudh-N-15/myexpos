@@ -1,51 +1,72 @@
+alias currentPID R0;
+alias process_table_entry R1;
 
-alias currPID R6 ;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+process_table_entry = PROCESS_TABLE + 16 * currentPID;
 
-currPID = [SYSTEM_STATUS_TABLE + 1] ; //Current PID
+multipush(BP);
 
-multipush(BP) ; //Pushing BP onto kernel stack.Actually saving the values of the registers.
+[process_table_entry + 12] = SP % 512;
+[process_table_entry + 14] = PTBR;
+[process_table_entry + 15] = PTLR;
 
-alias PTentry R12 ;
+alias i R2;
+alias state R3;
+alias newPID R4;
 
-[PROCESS_TABLE + currPID * 16 + 12] = SP % 512;
-[PROCESS_TABLE + currPID * 16 + 14] = PTBR;
-[PROCESS_TABLE + currPID * 16 + 15] = PTLR;
+if ([SYSTEM_STATUS_TABLE + 5] != 0) then
+    if ([PROCESS_TABLE + 15 * 16 + 4] == WAIT_DISK) then
+        i = 0;
+    else
+        i = SWAPPER_DAEMON; // PID = 15
+    endif;
+else
+    i = currentPID + 1;
+    while (i < 16) do
+        state = [PROCESS_TABLE + i * 16 + 4];
+        if ((state == READY || state == CREATED) && [PROCESS_TABLE + i * 16 + 6] != 1) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
 
-alias i R7;
-alias flag R8;
-alias newPID R10;
-flag=0;
-i =(1+currPID )% 16;
+    if (i == 16) then
+        i = 1; //WHY 1 ???
 
-while(i != currPID)do  
-	if( [ PROCESS_TABLE + i*16 + 4] == CREATED || [ PROCESS_TABLE + i*16 + 4] == READY) then
-    		flag = 1;
-    		newPID = i; 
-    		break;
-  	endif;
-  	i=(i+1)%16;
-endwhile;
+        while (i < currentPID) do
+            state = [PROCESS_TABLE + i * 16 + 4];
+            if ((state == CREATED || state == READY) && [PROCESS_TABLE + i * 16 + 6] != 1) then
+                break;
+            endif;
+            i = i + 1;
+        endwhile;
+    endif;
 
-if(flag == 0) then
-	newPID = 0;
+    if (i == currentPID) then
+        i = 0;
+    endif;
 endif;
 
-SP = [PROCESS_TABLE + newPID * 16 + 11]* 512 + [PROCESS_TABLE + newPID * 16 + 12];
-PTBR = [PROCESS_TABLE + newPID * 16 + 14];
-PTLR = [PROCESS_TABLE + newPID * 16 + 15];
+newPID = i;
+
+process_table_entry = PROCESS_TABLE + newPID * 16;
+PTBR = [process_table_entry + 14];
+PTLR = [process_table_entry + 15];
 
 [SYSTEM_STATUS_TABLE + 1] = newPID;
 
-if([PROCESS_TABLE + newPID*16 + 4] == CREATED) then
-	SP = [PROCESS_TABLE + newPID * 16 + 13];
-    BP = [[PROCESS_TABLE + newPID * 16 + 11] * 512];
-	[PROCESS_TABLE + newPID * 16 + 4] = RUNNING;
-	[PROCESS_TABLE + newPID * 16 + 9] = 0;
-	ireturn;
-endif;	
+if ([process_table_entry + 4] == CREATED) then
+    SP = [process_table_entry + 13];
+    BP = [[process_table_entry + 11] * 512];
+    [process_table_entry + 4] = RUNNING;
+    [process_table_entry + 9] = 0; // mode flag
+    ireturn;
+endif;
 
-[PROCESS_TABLE + newPID * 16 +4] = RUNNING;
+[process_table_entry + 4] = RUNNING;
+
+SP = [process_table_entry + 11] * 512 + [process_table_entry + 12];
+
 multipop(BP);
 
 return;
-

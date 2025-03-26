@@ -1,105 +1,101 @@
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 7 ;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 7;
 
-alias userSP R0 ;
+alias userSP R1;
 userSP = SP;
 
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP; 
-SP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11]*512 - 1; 
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
 
-alias filed R1;
-filed = [[PTBR + 2*((userSP-4)/512)]*512 + (userSP-4)%512] ;
+alias fileDesc R2;
+fileDesc = [[PTBR + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
 
-alias retAddress R2;
-retAddress = [PTBR + 2*((userSP-1)/512)]*512 + (userSP-1)%512 ;
+alias returnAddress R5;
+returnAddress = [PTBR + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512;
 
-if(filed == -1) then
-    alias wordaddr R3 ;
-	wordaddr = [([PTBR + 2*((userSP-3)/512)]) * 512 + (userSP-3)%512] ;
-	multipush(R0,R1,R2,R3);
-	R1 = TERMINAL_READ;
-	R2 = [SYSTEM_STATUS_TABLE+1] ;
-	R3 = wordaddr ;
-	call MOD_4 ;
-	multipop(R0,R1,R2,R3);
-    [retAddress] = 0;
-endif;
+if (fileDesc == -1) then
+        // Terminal
+        alias wordAddress R3;
+        wordAddress = [PTBR + 2 * ((userSP - 3) / 512)] * 512 + (userSP - 3) % 512;
 
-if(filed != -1) then
+        multipush(R1, R2, R3, R5);
+        R1 = 4; // Terminal Read
+        R2 = [SYSTEM_STATUS_TABLE + 1];
+        R3 = [wordAddress];
+        call MOD_4;
+        multipop(R1, R2, R3, R5);
 
-    if(filed < 0 || filed > 7) then
-        [retAddress] = -1 ;
-    else
-        alias RTentry R3 ;
-        RTentry = [PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +11]*512 + RESOURCE_TABLE_OFFSET +filed*2;
+        [returnAddress] = 0;
+else if (fileDesc >= 0 && fileDesc <= 7 && [[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 + RESOURCE_TABLE_OFFSET + fileDesc * 2] == FILE) then
+        // File
+        alias fileIndex R3;
+        fileIndex = [[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 + RESOURCE_TABLE_OFFSET + fileDesc * 2 + 1];
+        
+        alias inodeIndex R4;
+        inodeIndex = [OPEN_FILE_TABLE + fileIndex * 4 + 0];
 
-        if([RTentry] != FILE)then
-            [retAddress] = -1;
-        else
-            alias inodeIndex R4;
-            alias openFTindex R5;
-            openFTindex = [RTentry +1];
-            inodeIndex = [OPEN_FILE_TABLE + openFTindex*4];
+        multipush(R1,R2,R3,R4,R5);
+        R1 = 4; // Acquire Inode
+        R2 = inodeIndex;
+        R3 = [SYSTEM_STATUS_TABLE + 1];
+        call MOD_0;
+        multipop(R1,R2,R3,R4,R5);
 
-            breakpoint;
-
-            multipush(R0,R1,R2,R3,R4,R5);
-                R1 = ACQUIRE_INODE;
-                R2 = inodeIndex;
-                R3 = [SYSTEM_STATUS_TABLE +1];
-                call RESOURCE_MANAGER ;
-                R9 = R0;
-            multipop(R0,R1,R2,R3,R4,R5);
-
-            if(R9 == -1) then
-                [retAddress] = -1;
-            else
+        if (R0 != -1) then
                 alias lseek R6;
-                lseek = OPEN_FILE_TABLE + openFTindex*4 + 2;
+                lseek = OPEN_FILE_TABLE + fileIndex * 4 + 2;
 
                 alias wordAddress R7;
-                wordAddress = [[PTBR + 2*((userSP - 3)/512)]*512 + (userSP-3)%512] ;
-                wordAddress = [PTBR + 2*(wordAddress/512)]*512 + wordAddress%512 ;
+                wordAddress = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + (userSP - 3) % 512];
+                wordAddress = [PTBR + 2 * wordAddress / 512] * 512 + wordAddress % 512;
 
-                if(inodeIndex == INODE_ROOT) then
-                    if( [lseek] == 480 ) then
-                        [retAddress] = -2;
-                    else
-                        [wordAddress] = [ROOT_FILE + [lseek]];
-                        [lseek] = [lseek] + 1;
-                        [retAddress] = 0;
-                    endif;
+                if (inodeIndex == INODE_ROOT) then
+                        if ([lseek] == 480) then
+                                [returnAddress] = -2;
+                        else
+                                [wordAddress] = [ROOT_FILE + [lseek]];
+                                [lseek] = [lseek] + 1;
+                                [returnAddress] = 0;
+                        endif;
                 else
-                    if([lseek] == [INODE_TABLE + inodeIndex*16 + 2]) then                        
-                        [retAddress] = -2;
-                    else   
-                        alias blockNum R8;
-                        alias offset R9;
-                        blockNum = [INODE_TABLE + inodeIndex*16 +8 +([lseek] / 512)];
-                        offset = [lseek] % 512 ;
+                        if ([lseek] == [INODE_TABLE + inodeIndex * 16 + 2]) then
+                                [returnAddress] = -2;
+                        else
+                                alias blockIndex R9;
+                                blockIndex = [lseek] / 512;
 
-                        multipush(R0,R1,R2,R3,R4,R5,R6,R6,R7,R8,R9);
-                            R1 = BUFFERED_READ;
-                            R2 = blockNum;
-                            R3 = offset;
-                            R4 = wordAddress ;
-                            call FILE_MANAGER;
-                        multipop(R0,R1,R2,R3,R4,R5,R6,R6,R7,R8,R9);
+                                alias blockNum R8;
+                                blockNum = [INODE_TABLE + inodeIndex * 16 + 8 + blockIndex];
+                                
+                                alias offset R9;
+                                offset = [lseek] % 512;
+                                
+                                multipush(R1,R2,R3,R4,R5,R6,R7,R8,R9);
+                                R1 = 2; // Buffer Read
+                                R2 = blockNum;
+                                R3 = offset;
+                                R4 = wordAddress;
+                                call MOD_3;
+                                multipop(R1,R2,R3,R4,R5,R6,R7,R8,R9);
 
-                        [lseek] = [lseek] + 1;
-                        [retAddress] = 0;
-                    endif;
+                                [lseek] = [lseek] + 1;
+                                [returnAddress] = 0;
+                        endif;
                 endif;
-                    multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9);
-                        R1 = RELEASE_INODE;
-                        R2 = inodeIndex;
-                        R3 = [SYSTEM_STATUS_TABLE +1];
-                        call RESOURCE_MANAGER;
-                    multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9);
-            endif;
-        endif;
-    endif;
-endif;                        
 
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0 ;
-SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13];
+                multipush(R1,R2,R3,R4,R5,R6,R7);
+                R1 = 5; // Release Inode
+                R2 = inodeIndex;
+                R3 = [SYSTEM_STATUS_TABLE + 1];
+                call MOD_0;
+                multipop(R1,R2,R3,R4,R5,R6,R7);
+        else
+                [returnAddress] = -1;
+        endif;
+else
+        [returnAddress] = -1;
+endif;
+endif;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+SP = userSP;
 ireturn;

@@ -1,8 +1,5 @@
-breakpoint;
-
 //Mode flag set to -1
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]  * 16 + 9] = -1;
-
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
 
@@ -27,7 +24,6 @@ if(EC != 0 || ([PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 13] == (PTLR * 512
     endif;
 
     print "exiting";
-    breakpoint;
 
     R1 = EXIT_PROCESS ;
     R2 = [SYSTEM_STATUS_TABLE  + 1];
@@ -50,7 +46,6 @@ else
 
         //print R0 ;
 
-        breakpoint;
     endif;
 
     if((EPN < 8) && (EPN >= 4)) then
@@ -67,10 +62,9 @@ else
     endif;
 endif;
     
-    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 9] = 0;
-
     multipop(EIP);
     restore;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1]*16 + 9] = 0;
     SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] ; 
     SP = SP + 1;
 
